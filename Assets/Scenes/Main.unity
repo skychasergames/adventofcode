@@ -240,7 +240,8 @@ MonoBehaviour:
   _timeToMature: 8
   _timeBetweenReproductions: 6
   _exampleIterations: 18
-  _puzzleIterations: 80
+  _puzzle1Iterations: 80
+  _puzzle2Iterations: 256
 --- !u!4 &735483790
 Transform:
   m_ObjectHideFlags: 0
