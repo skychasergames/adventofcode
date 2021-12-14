@@ -12,7 +12,6 @@ public class CellView : MonoBehaviour
 	{
 		SetText("");
 		SetBackgroundColor(Color.white);
-
 	}
 	
 	public void SetText(string text)

@@ -5,6 +5,7 @@ using UnityEngine;
 public abstract class GridBase<TValue> : MonoBehaviour
 {
 	[SerializeField] protected CellView _cellViewPrefab = null;
+	[SerializeField] protected int _disableRenderingAboveCellCount = 10000;
 
 	public int columns { get; protected set; }
 	public int rows { get; protected set; }
@@ -13,6 +14,11 @@ public abstract class GridBase<TValue> : MonoBehaviour
 	protected CellView[,] cellViews { get; set; }
 	protected bool _disableRendering = false;
 
+	public virtual void Initialize(int numColumnsAndRows)
+	{
+		Initialize(numColumnsAndRows, numColumnsAndRows);
+	}
+	
 	public virtual void Initialize(int numColumns, int numRows)
 	{
 		while (transform.childCount > 0)
@@ -22,10 +28,9 @@ public abstract class GridBase<TValue> : MonoBehaviour
 		
 		columns = numColumns;
 		rows = numRows;
-		_disableRendering = (columns >= 100 || rows >= 100);
-		
 		cells = new TValue[columns, rows];
-		
+
+		_disableRendering = cells.Length >= _disableRenderingAboveCellCount;
 		if (!_disableRendering)
 		{
 			cellViews = new CellView[columns, rows];

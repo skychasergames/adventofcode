@@ -9,7 +9,8 @@ using UnityEditor;
 public class Day5 : PuzzleBase
 {
 	[SerializeField] private IntGrid _grid = null;
-	[SerializeField] private int _gridSize = 10;
+	[SerializeField] private int _exampleGridSize = 10;
+	[SerializeField] private int _puzzleGridSize = 1000;
 	[SerializeField] private Color[] _highlightColors = { Color.yellow, Color.red };
 	
 	protected override void ExecutePuzzle1()
@@ -20,7 +21,8 @@ public class Day5 : PuzzleBase
 	[Button("Reset Board")]
 	private void ResetBoard()
 	{
-		_grid.Initialize(_gridSize, _gridSize);
+		int gridSize = _isExample ? _exampleGridSize : _puzzleGridSize;
+		_grid.Initialize(gridSize);
 	}
 
 	private void ExecutePuzzle(bool includeDiagonals)
