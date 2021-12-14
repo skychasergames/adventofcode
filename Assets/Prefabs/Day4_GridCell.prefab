@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1656790659944282751}
   - component: {fileID: 3773920857564390096}
   m_Layer: 0
-  m_Name: IntGridCell
+  m_Name: Day4_GridCell
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

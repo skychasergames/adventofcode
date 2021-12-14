@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using NaughtyAttributes;
 using UnityEngine;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
@@ -31,7 +32,8 @@ public class Day4 : PuzzleBase
 		// Play bingo!
 		_playBingoCoroutine = EditorCoroutineUtility.StartCoroutine(PlayBingo(numbers, grids), this);
 	}
-
+	
+	[Button("Reset Boards")]
 	private void ResetBoards()
 	{
 		if (_playBingoCoroutine != null)

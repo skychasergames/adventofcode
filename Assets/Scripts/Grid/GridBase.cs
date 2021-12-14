@@ -9,10 +9,45 @@ public abstract class GridBase<TValue> : MonoBehaviour
 	public int columns { get; protected set; }
 	public int rows { get; protected set; }
 	public TValue[,] cells { get; protected set; }
-	public CellView[,] cellViews { get; protected set; }
+	
+	protected CellView[,] cellViews { get; set; }
+	protected bool _disableRendering = false;
+
+	public virtual void Initialize(int numColumns, int numRows)
+	{
+		while (transform.childCount > 0)
+		{
+			DestroyImmediate(transform.GetChild(0).gameObject);
+		}
+		
+		columns = numColumns;
+		rows = numRows;
+		_disableRendering = (columns >= 100 || rows >= 100);
+		
+		cells = new TValue[columns, rows];
+		
+		if (!_disableRendering)
+		{
+			cellViews = new CellView[columns, rows];
+			for (int row = 0; row < rows; row++)
+			{
+				for (int column = 0; column < columns; column++)
+				{
+					CellView cellView = Instantiate(_cellViewPrefab, transform);
+					cellViews[column, row] = cellView;
+					cellView.SetText("");
+				}
+			}
+		}
+	}
 
 	public virtual void Initialize(string[] gridData, string delimiter)
 	{
+		while (transform.childCount > 0)
+		{
+			DestroyImmediate(transform.GetChild(0).gameObject);
+		}
+		
 		columns = PuzzleBase.SplitString(gridData[0], delimiter).Length;
 		rows = gridData.Length;
 		
@@ -28,14 +63,25 @@ public abstract class GridBase<TValue> : MonoBehaviour
 			}
 		}
 
-		cellViews = new CellView[columns, rows];
-		for (int row = 0; row < rows; row++)
+		if (!_disableRendering)
 		{
-			for (int column = 0; column < columns; column++)
+			cellViews = new CellView[columns, rows];
+			for (int row = 0; row < rows; row++)
 			{
-				CellView cellView = Instantiate(_cellViewPrefab, transform);
-				cellView.SetText(cells[column, row].ToString());
-				cellViews[column, row] = cellView;
+				for (int column = 0; column < columns; column++)
+				{
+					CellView cellView = Instantiate(_cellViewPrefab, transform);
+					cellViews[column, row] = cellView;
+
+					if (columns >= 100)
+					{
+						cellView.gameObject.SetActive(false);
+					}
+					else
+					{
+						cellView.SetText("");
+					}
+				}
 			}
 		}
 	}
@@ -44,7 +90,10 @@ public abstract class GridBase<TValue> : MonoBehaviour
 
 	public virtual void HighlightCellView(int column, int row, Color color)
 	{
-		cellViews[column, row].SetBackgroundColor(color);
+		if (!_disableRendering)
+		{
+			cellViews[column, row].SetBackgroundColor(color);
+		}
 	}
 	
 	public virtual void HighlightRow(int row, Color color)
@@ -60,6 +109,16 @@ public abstract class GridBase<TValue> : MonoBehaviour
 		for (int row = 0; row < rows; row++)
 		{
 			HighlightCellView(column, row, color);
+		}
+	}
+
+	public virtual void SetCellValue(int column, int row, TValue value)
+	{
+		cells[column, row] = value;
+
+		if (!_disableRendering)
+		{
+			cellViews[column, row].SetText(value.ToString());
 		}
 	}
 }
