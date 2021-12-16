@@ -147,32 +147,37 @@ public abstract class GridBase<TValue> : MonoBehaviour
 		}
 	}
 
-	public List<TValue> GetOrthogonalNeighbours(int column, int row)
+	public List<TValue> GetOrthogonalNeighbourValues(int column, int row)
 	{
-		List<TValue> neighbours = new List<TValue>();
+		return GetOrthogonalNeighbourCoords(column, row).Select(coord => cells[coord.x, coord.y]).ToList();
+	}
+
+	public List<Vector2Int> GetOrthogonalNeighbourCoords(int column, int row)
+	{
+		List<Vector2Int> neighbours = new List<Vector2Int>();
 		
 		// Left
 		if (column > 0)
 		{
-			neighbours.Add(cells[column - 1, row]);
+			neighbours.Add(new Vector2Int(column - 1, row));
 		}
 		
 		// Right
 		if (column < columns - 1)
 		{
-			neighbours.Add(cells[column + 1, row]);
+			neighbours.Add(new Vector2Int(column + 1, row));
 		}
 		
 		// Above
 		if (row > 0)
 		{
-			neighbours.Add(cells[column, row - 1]);
+			neighbours.Add(new Vector2Int(column, row - 1));
 		}
 		
 		// Below
 		if (row < rows - 1)
 		{
-			neighbours.Add(cells[column, row + 1]);
+			neighbours.Add(new Vector2Int(column, row + 1));
 		}
 
 		return neighbours;
