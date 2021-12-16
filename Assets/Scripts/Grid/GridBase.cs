@@ -1,10 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public abstract class GridBase<TValue> : MonoBehaviour
 {
 	[SerializeField] protected CellView _cellViewPrefab = null;
+	[SerializeField] protected GridLayoutGroup _gridLayoutGroup = null;
 	[SerializeField] protected int _disableRenderingAboveCellCount = 10000;
 
 	public int columns { get; protected set; }
@@ -13,6 +16,8 @@ public abstract class GridBase<TValue> : MonoBehaviour
 	
 	protected CellView[,] cellViews { get; set; }
 	protected bool _disableRendering = false;
+
+	protected abstract TValue ParseValue(string value);
 
 	public virtual void Initialize(int numColumnsAndRows)
 	{
@@ -33,65 +38,80 @@ public abstract class GridBase<TValue> : MonoBehaviour
 		_disableRendering = cells.Length >= _disableRenderingAboveCellCount;
 		if (!_disableRendering)
 		{
-			cellViews = new CellView[columns, rows];
-			for (int row = 0; row < rows; row++)
-			{
-				for (int column = 0; column < columns; column++)
-				{
-					CellView cellView = Instantiate(_cellViewPrefab, transform);
-					cellViews[column, row] = cellView;
-					cellView.SetText("");
-				}
-			}
+			CreateCellViews();
 		}
 	}
 
-	public virtual void Initialize(string[] gridData, string delimiter)
+	public virtual void Initialize(string[] gridData, string delimiter = "")
 	{
-		while (transform.childCount > 0)
-		{
-			DestroyImmediate(transform.GetChild(0).gameObject);
-		}
+		ClearCellViews();
 		
-		columns = PuzzleBase.SplitString(gridData[0], delimiter).Length;
+		if (!string.IsNullOrEmpty(delimiter))
+		{
+			columns = PuzzleBase.SplitString(gridData[0], delimiter).Length;
+		}
+		else
+		{
+			// If there's no delimiter, we'll turn each individual char of the line into a cell
+			columns = gridData[0].Length;
+		}
+
 		rows = gridData.Length;
 		
 		cells = new TValue[columns, rows];
 		for (int row = 0; row < rows; row++)
 		{
 			string lineData = gridData[row];
-			string[] lineCellData = PuzzleBase.SplitString(lineData, delimiter);
+			
+			string[] lineCellData;
+			if (!string.IsNullOrEmpty(delimiter))
+			{
+				lineCellData = PuzzleBase.SplitString(lineData, delimiter);
+			}
+			else
+			{
+				// If there's no delimiter, split line into individual chars
+				// eg. "12345" becomes { "1", "2", "3", "4", "5" }  
+				lineCellData = lineData.ToCharArray().Select(c => c.ToString()).ToArray();
+			}
+
 			for (int column = 0; column < columns; column++)
 			{
 				string cellData = lineCellData[column];
 				cells[column, row] = ParseValue(cellData);
 			}
 		}
-
+		
+		_disableRendering = cells.Length >= _disableRenderingAboveCellCount;
 		if (!_disableRendering)
 		{
-			cellViews = new CellView[columns, rows];
-			for (int row = 0; row < rows; row++)
-			{
-				for (int column = 0; column < columns; column++)
-				{
-					CellView cellView = Instantiate(_cellViewPrefab, transform);
-					cellViews[column, row] = cellView;
-
-					if (columns >= 100)
-					{
-						cellView.gameObject.SetActive(false);
-					}
-					else
-					{
-						cellView.SetText("");
-					}
-				}
-			}
+			CreateCellViews();
 		}
 	}
 
-	protected abstract TValue ParseValue(string value);
+	public virtual void ClearCellViews()
+	{
+		while (transform.childCount > 0)
+		{
+			DestroyImmediate(transform.GetChild(0).gameObject);
+		}
+	}
+
+	protected virtual void CreateCellViews()
+	{
+		_gridLayoutGroup.constraintCount = columns;
+
+		cellViews = new CellView[columns, rows];
+		for (int row = 0; row < rows; row++)
+		{
+			for (int column = 0; column < columns; column++)
+			{
+				CellView cellView = Instantiate(_cellViewPrefab, transform);
+				cellViews[column, row] = cellView;
+				cellView.SetText(cells[column, row].ToString());
+			}
+		}
+	}
 
 	public virtual void HighlightCellView(int column, int row, Color color)
 	{
@@ -125,5 +145,36 @@ public abstract class GridBase<TValue> : MonoBehaviour
 		{
 			cellViews[column, row].SetText(value.ToString());
 		}
+	}
+
+	public List<TValue> GetOrthogonalNeighbours(int column, int row)
+	{
+		List<TValue> neighbours = new List<TValue>();
+		
+		// Left
+		if (column > 0)
+		{
+			neighbours.Add(cells[column - 1, row]);
+		}
+		
+		// Right
+		if (column < columns - 1)
+		{
+			neighbours.Add(cells[column + 1, row]);
+		}
+		
+		// Above
+		if (row > 0)
+		{
+			neighbours.Add(cells[column, row - 1]);
+		}
+		
+		// Below
+		if (row < rows - 1)
+		{
+			neighbours.Add(cells[column, row + 1]);
+		}
+
+		return neighbours;
 	}
 }

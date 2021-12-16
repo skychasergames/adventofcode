@@ -50,6 +50,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cellViewPrefab: {fileID: 1656790659944282751, guid: 7e4c4f5e237bcc94ab1587bcf200fd47, type: 3}
+  _gridLayoutGroup: {fileID: 3718914481329552617}
+  _disableRenderingAboveCellCount: 10000
 --- !u!114 &3718914481329552617
 MonoBehaviour:
   m_ObjectHideFlags: 0
