@@ -23,22 +23,30 @@ public class Day8 : PuzzleBase
 	//	.    f  e    f  .    f  e    f  .    f
 	//	 gggg    gggg    ....    gggg    gggg
 
-	private int[] _segmentCountPerDigit =
+	private string[] _segmentsPerDigit =
 	{
-		6,	// 0
-		2,	// 1 (unique)
-		5,	// 2
-		5,	// 3
-		4,	// 4 (unique)
-		5,	// 5
-		6,	// 6
-		3,	// 7 (unique)
-		7,	// 8 (unique)
-		6,	// 9
+		"abcefg",	// 0
+		"cf",		// 1 (unique)
+		"acdeg",	// 2
+		"acdfg",	// 3
+		"bcdf",		// 4 (unique)
+		"abdfg",	// 5
+		"abdefg",	// 6
+		"acf",		// 7 (unique)
+		"abcdefg",	// 8 (unique)
+		"abcdfg",	// 9
 	};
+
+	[SerializeField] private SevenSegmentDisplay _displayPrefab = null;
+	[SerializeField] private GameObject _separatorPrefab = null;
+	[SerializeField] private Transform _displayContainer = null;
+	[SerializeField] private Color _displayColorKnown = Color.green;
+	[SerializeField] private Color _displayColorUnknown = Color.white;
 
 	protected override void ExecutePuzzle1()
 	{
+		ResetDisplay();
+		
 		int totalKnownDigits = 0;
 		foreach (string line in _inputDataLines)
 		{
@@ -48,16 +56,50 @@ public class Day8 : PuzzleBase
 
 			Dictionary<string, int> stringToDigitMapping = new Dictionary<string, int>
 			{
-				{ OrderString(FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentCountPerDigit[1])), 1 },
-				{ OrderString(FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentCountPerDigit[4])), 4 },
-				{ OrderString(FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentCountPerDigit[7])), 7 },
-				{ OrderString(FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentCountPerDigit[8])), 8 },
+				{ OrderString(FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentsPerDigit[1].Length)), 1 },
+				{ OrderString(FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentsPerDigit[4].Length)), 4 },
+				{ OrderString(FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentsPerDigit[7].Length)), 7 },
+				{ OrderString(FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentsPerDigit[8].Length)), 8 },
 			};
 
 			totalKnownDigits += puzzleDigitStrings.Count(digitString => stringToDigitMapping.ContainsKey(OrderString(digitString)));
+
+			foreach (string digitString in uniqueDigitStrings.Select(OrderString))
+			{
+				DisplayDigit(digitString, stringToDigitMapping);
+			}
+
+			Instantiate(_separatorPrefab, _displayContainer);
+			
+			foreach (string digitString in puzzleDigitStrings.Select(OrderString))
+			{
+				DisplayDigit(digitString, stringToDigitMapping);
+			}
 		}
 
 		LogResult("Total known digits", totalKnownDigits);
+	}
+
+	private void DisplayDigit(string digitString, Dictionary<string, int> stringToDigitMapping)
+	{
+		string displayDigitString = digitString;
+		Color color = _displayColorUnknown;
+		if (stringToDigitMapping.TryGetValue(digitString, out int digit))
+		{
+			displayDigitString = _segmentsPerDigit[digit];
+			color = _displayColorKnown;
+		}
+		
+		SevenSegmentDisplay display = Instantiate(_displayPrefab, _displayContainer);
+		display.ShowDigit(displayDigitString, color);
+	}
+
+	private void ResetDisplay()
+	{
+		while (_displayContainer.childCount > 0)
+		{
+			DestroyImmediate(_displayContainer.GetChild(0).gameObject);
+		}
 	}
 
 	private string OrderString(string str)
@@ -77,15 +119,10 @@ public class Day8 : PuzzleBase
 		return string.Empty;
 	}
 
-	//  dddd
-	// e    a
-	// e    a
-	//  ffff
-	// g    b
-	// g    b
-	//  cccc
 	protected override void ExecutePuzzle2()
 	{
+		ResetDisplay();
+		
 		int sum = 0;
 		foreach (string line in _inputDataLines)
 		{
@@ -95,12 +132,20 @@ public class Day8 : PuzzleBase
 
 			Dictionary<string, int> stringToDigitMapping = CalculateStringToDigitMapping(uniqueDigitStrings);
 
+			foreach (string digitString in uniqueDigitStrings.Select(OrderString))
+			{
+				DisplayDigit(digitString, stringToDigitMapping);
+			}
+
+			Instantiate(_separatorPrefab, _displayContainer);
+			
 			StringBuilder convertedDigits = new StringBuilder();
 			foreach (string digitString in puzzleDigitStrings.Select(OrderString))
 			{
 				if (stringToDigitMapping.TryGetValue(digitString, out int digit))
 				{
 					convertedDigits.Append(digit);
+					DisplayDigit(digitString, stringToDigitMapping);
 				}
 				else
 				{
@@ -124,10 +169,10 @@ public class Day8 : PuzzleBase
 	private Dictionary<string, int> CalculateStringToDigitMapping(string[] uniqueDigitStrings)
 	{
 		// Use the four unique digits (1, 4, 7, 8) as a starting point
-		string digit1 = FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentCountPerDigit[1]);
-		string digit4 = FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentCountPerDigit[4]);
-		string digit7 = FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentCountPerDigit[7]);
-		string digit8 = FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentCountPerDigit[8]);
+		string digit1 = FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentsPerDigit[1].Length);
+		string digit4 = FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentsPerDigit[4].Length);
+		string digit7 = FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentsPerDigit[7].Length);
+		string digit8 = FindDigitStringWithUniqueSegmentCount(uniqueDigitStrings, _segmentsPerDigit[8].Length);
 		
 		List<string> digitStringsWithFiveSegments = uniqueDigitStrings.Where(digitString => digitString.Length == 5).ToList();
 		List<string> digitStringsWithSixSegments = uniqueDigitStrings.Where(digitString => digitString.Length == 6).ToList();
