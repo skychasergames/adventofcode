@@ -36,27 +36,39 @@ public class Day10 : PuzzleBase
 	protected override void ExecutePuzzle1()
 	{
 		StringBuilder displayStringBuilder = new StringBuilder();
+		
 		int totalSyntaxErrorScore = 0;
 		for (int i = 0; i < _inputDataLines.Length; i++)
 		{
 			string line = _inputDataLines[i];
-			ValidateLine(line, out string lineDisplayString,
+			ValidateLine(line,
 				
 				// Valid line callback
 				(isLineComplete) =>
 				{
 					Log("Line " + i + " is valid (" + (isLineComplete ? "complete" : "incomplete") + ")");
+					
+					displayStringBuilder.AppendLine(line);
 				},
 				
 				// Corrupted line callback
-				(illegalChar, expectedChar) =>
+				(illegalChar, expectedChar, illegalCharIndex) =>
 				{
 					Log("Line " + i + " encountered illegal character `" + illegalChar + "' (expected `" + expectedChar + "')");
+					
 					totalSyntaxErrorScore += _syntaxErrorScore[illegalChar];
+
+					StringBuilder lineDisplayStringBuilder = new StringBuilder()
+						.Append("<color=yellow>")
+						.Append(line.Substring(0, illegalCharIndex))
+						.Append("</color><color=red>")
+						.Append(illegalChar)
+						.Append("</color><color=grey>")
+						.Append(line.Substring(illegalCharIndex + 1))
+						.Append("</color>");
+					displayStringBuilder.AppendLine(lineDisplayStringBuilder.ToString());
 				}
 			);
-
-			displayStringBuilder.AppendLine(lineDisplayString);
 		}
 
 		_textMesh.SetText(displayStringBuilder);
@@ -64,18 +76,16 @@ public class Day10 : PuzzleBase
 		LogResult("Total syntax error score", totalSyntaxErrorScore);
 	}
 
-	private void ValidateLine(string line, out string displayString, Action<bool> validLineCallback, Action<char, char> corruptedLineCallback)
+	private void ValidateLine(string line, Action<bool> validLineCallback, Action<char, char, int> corruptedLineCallback)
 	{
-		StringBuilder displayStringBuilder = new StringBuilder();
-
 		Stack<char> openChunks = new Stack<char>();
-		foreach (char c in line)
+		for (int i = 0; i < line.Length; i++)
 		{
+			char c = line[i];
 			if (_chunkPairs.Any(pair => pair.Key == c))
 			{
 				// Opening char
 				openChunks.Push(c);
-				displayStringBuilder.Append(c);
 			}
 			else
 			{
@@ -85,17 +95,12 @@ public class Day10 : PuzzleBase
 				if (c == expectedClosingChar)
 				{
 					// Chunk is valid - continue checking
-					displayStringBuilder.Append(c);
 					continue;
 				}
 				else
 				{
 					// Chunk is invalid - line is invalid
-					displayStringBuilder.Insert(0, "<color=yellow>");
-					displayStringBuilder.Append("</color>");
-					displayStringBuilder.Append($"<color=red>{c}</color>");
-					displayString = displayStringBuilder.ToString();
-					corruptedLineCallback(c, expectedClosingChar);
+					corruptedLineCallback(c, expectedClosingChar, i);
 					return;
 				}
 			}
@@ -103,7 +108,6 @@ public class Day10 : PuzzleBase
 		
 		// Line was valid!
 		validLineCallback(openChunks.Count == 0);
-		displayString = displayStringBuilder.ToString();
 	}
 
 	protected override void ExecutePuzzle2()
