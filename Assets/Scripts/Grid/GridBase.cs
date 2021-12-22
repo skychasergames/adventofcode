@@ -121,6 +121,11 @@ public abstract class GridBase<TValue> : MonoBehaviour
 		}
 	}
 	
+	public void HighlightCellView(Vector2Int cell, Color color)
+	{
+		HighlightCellView(cell.x, cell.y, color);
+	}
+	
 	public virtual void HighlightRow(int row, Color color)
 	{
 		for (int column = 0; column < rows; column++)
@@ -137,6 +142,16 @@ public abstract class GridBase<TValue> : MonoBehaviour
 		}
 	}
 
+	public TValue GetCellValue(int column, int row)
+	{
+		return cells[column, row];
+	}
+
+	public TValue GetCellValue(Vector2Int cell)
+	{
+		return GetCellValue(cell.x, cell.y);
+	}
+
 	public virtual void SetCellValue(int column, int row, TValue value)
 	{
 		cells[column, row] = value;
@@ -147,9 +162,19 @@ public abstract class GridBase<TValue> : MonoBehaviour
 		}
 	}
 
+	public void SetCellValue(Vector2Int cell, TValue value)
+	{
+		SetCellValue(cell.x, cell.y, value);
+	}
+
 	public List<TValue> GetOrthogonalNeighbourValues(int column, int row)
 	{
 		return GetOrthogonalNeighbourCoords(column, row).Select(coord => cells[coord.x, coord.y]).ToList();
+	}
+
+	public List<TValue> GetOrthogonalNeighbourValues(Vector2Int cell)
+	{
+		return GetOrthogonalNeighbourValues(cell.x, cell.y);
 	}
 
 	public List<Vector2Int> GetOrthogonalNeighbourCoords(int column, int row)
@@ -181,5 +206,79 @@ public abstract class GridBase<TValue> : MonoBehaviour
 		}
 
 		return neighbours;
+	}
+
+	public List<Vector2Int> GetOrthogonalNeighbourCoords(Vector2Int cell)
+	{
+		return GetOrthogonalNeighbourCoords(cell.x, cell.y);
+	}
+
+	public List<TValue> GetDiagonalNeighbourValues(int column, int row)
+	{
+		return GetDiagonalNeighbourCoords(column, row).Select(coord => cells[coord.x, coord.y]).ToList();
+	}
+
+	public List<TValue> GetDiagonalNeighbourValues(Vector2Int cell)
+	{
+		return GetDiagonalNeighbourValues(cell.x, cell.y);
+	}
+
+	public List<Vector2Int> GetDiagonalNeighbourCoords(int column, int row)
+	{
+		List<Vector2Int> neighbours = new List<Vector2Int>();
+		
+		// Up and left
+		if (column > 0 && row > 0)
+		{
+			neighbours.Add(new Vector2Int(column - 1, row - 1));
+		}
+		
+		// Up and right
+		if (column < columns - 1 && row > 0)
+		{
+			neighbours.Add(new Vector2Int(column + 1, row - 1));
+		}
+		
+		// Down and left
+		if (column > 0 && row < rows - 1)
+		{
+			neighbours.Add(new Vector2Int(column - 1, row + 1));
+		}
+		
+		// Down and right
+		if (column < columns - 1 && row < rows - 1)
+		{
+			neighbours.Add(new Vector2Int(column + 1, row + 1));
+		}
+
+		return neighbours;
+	}
+
+	public List<Vector2Int> GetDiagonalNeighbourCoords(Vector2Int cell)
+	{
+		return GetDiagonalNeighbourCoords(cell.x, cell.y);
+	}
+
+	public List<TValue> GetAllNeighbourValues(int column, int row)
+	{
+		return GetAllNeighbourCoords(column, row).Select(coord => cells[coord.x, coord.y]).ToList();
+	}
+
+	public List<TValue> GetAllNeighbourValues(Vector2Int cell)
+	{
+		return GetAllNeighbourValues(cell.x, cell.y);
+	}
+	
+	public List<Vector2Int> GetAllNeighbourCoords(int column, int row)
+	{
+		List<Vector2Int> neighbours = new List<Vector2Int>();
+		neighbours.AddRange(GetOrthogonalNeighbourCoords(column, row));
+		neighbours.AddRange(GetDiagonalNeighbourCoords(column, row));
+		return neighbours;
+	}
+	
+	public List<Vector2Int> GetAllNeighbourCoords(Vector2Int cell)
+	{
+		return GetAllNeighbourCoords(cell.x, cell.y);
 	}
 }
