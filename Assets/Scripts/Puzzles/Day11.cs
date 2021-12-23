@@ -48,10 +48,10 @@ public class Day11 : PuzzleBase
 		_octopusGrid.Initialize(_inputDataLines);
 		
 		// Execute puzzle!
-		_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle(), this);
+		_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle(false), this);
 	}
 
-	private IEnumerator ExecutePuzzle()
+	private IEnumerator ExecutePuzzle(bool executeUntilSynchronized)
 	{
 		EditorWaitForSeconds interval = new EditorWaitForSeconds(_flashInterval);
 		EditorWaitForSeconds subflashInterval = new EditorWaitForSeconds(_subflashInterval);
@@ -61,7 +61,33 @@ public class Day11 : PuzzleBase
 		EditorApplication.QueuePlayerLoopUpdate();
 		yield return WaitToAdvanceExecution(interval);
 
-		for (int i = 0; i < _iterations; i++)
+		int numCellsThatFlashedThisStep = 0;
+		if (executeUntilSynchronized)
+		{
+			int numCells = _octopusGrid.cells.Length;
+			int stepsElapsed = 0;
+			while (numCellsThatFlashedThisStep != numCells)
+			{
+				yield return ExecutePuzzleStep(stepsElapsed);
+				stepsElapsed++;
+			}
+			
+			Log("Synchronized after " + stepsElapsed + " steps");
+		}
+		else
+		{
+			for (int i = 0; i < _iterations; i++)
+			{
+				yield return ExecutePuzzleStep(i);
+			}
+
+			LogResult("Total flashes after " + _iterations + " steps", totalFlashes);
+		}
+
+		_executePuzzleCoroutine = null;
+		
+		// --- Local method ---
+		IEnumerator ExecutePuzzleStep(int i)
 		{
 			List<Vector2Int> allCellsThatFlashedThisStep = new List<Vector2Int>();
 			
@@ -91,6 +117,7 @@ public class Day11 : PuzzleBase
 				yield return PropagateFlashes(allCellsThatFlashedThisStep, true);
 			}
 
+			numCellsThatFlashedThisStep = allCellsThatFlashedThisStep.Count;
 			LogResult("Completed step", i + 1);
 			
 			EditorApplication.QueuePlayerLoopUpdate();
@@ -153,9 +180,6 @@ public class Day11 : PuzzleBase
 				}
 			}
 		}
-
-		LogResult("Total flashes", totalFlashes);
-		_executePuzzleCoroutine = null;
 	}
 
 	private IEnumerator WaitToAdvanceExecution(EditorWaitForSeconds interval)
@@ -173,6 +197,13 @@ public class Day11 : PuzzleBase
 
 	protected override void ExecutePuzzle2()
 	{
+		// Reset, if necessary
+		ClearGrid();
 		
+		// Initialize with input data
+		_octopusGrid.Initialize(_inputDataLines);
+		
+		// Execute puzzle!
+		_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle(true), this);
 	}
 }
