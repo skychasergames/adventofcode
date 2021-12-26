@@ -9,22 +9,23 @@ public class Day12 : PuzzleBase
 {
 	protected override void ExecutePuzzle1()
 	{
+		ExecutePuzzle(false);
+	}
+
+	private void ExecutePuzzle(bool canRevisitOneSmallCave)
+	{
 		// Create cave systems and routes from input data
-		CaveSystem caveSystem = new CaveSystem(_inputDataLines);
+		CaveSystem caveSystem = new CaveSystem(_inputDataLines, canRevisitOneSmallCave);
 		
 		// Log results :ez:
-		LogResult("Total completed routes", caveSystem.CompletedRoutes.Count);
-		
-		StringBuilder stringBuilder = new StringBuilder().AppendLine();
+		StringBuilder stringBuilder = new StringBuilder().AppendLine(caveSystem.CompletedRoutes.Count.ToString());
 		foreach (Route completedRoute in caveSystem.CompletedRoutes)
 		{
 			stringBuilder.AppendLine(completedRoute.ToString());
 		}
 		LogResult("Completed routes", stringBuilder.ToString());
-				
-		LogResult("Total killed routes", caveSystem.KilledRoutes.Count);
-		
-		stringBuilder.Clear().AppendLine();
+
+		stringBuilder.Clear().AppendLine(caveSystem.KilledRoutes.Count.ToString());
 		foreach (Route killedRoute in caveSystem.KilledRoutes)
 		{
 			stringBuilder.AppendLine(killedRoute.ToString());
@@ -38,15 +39,20 @@ public class Day12 : PuzzleBase
 		private Cave _startCave = null;
 		private Cave _endCave = null;
 
+		public bool CanRevisitOneSmallCave { get; }
+
 		public List<Route> CalculatingRoutes { get; } = new List<Route>();
 		public List<Route> CompletedRoutes { get; } = new List<Route>();
 		public List<Route> KilledRoutes { get; } = new List<Route>();
 
-		public  CaveSystem(string[] inputDataLines)
+		public CaveSystem(string[] inputDataLines, bool canRevisitOneSmallCave)
 		{
+			CanRevisitOneSmallCave = canRevisitOneSmallCave;
+			
+			// Setup cave system
 			CreateCaves(inputDataLines);
 			CreateConnections(inputDataLines);
-
+			
 			// Create the first route
 			Route route = new Route();
 			SetupRoute(route);
@@ -102,21 +108,21 @@ public class Day12 : PuzzleBase
 					
 					if (id.Equals("start"))
 					{
-						_startCave = new StartCave(id);
+						_startCave = new StartCave(id, this);
 						_caves.Add(_startCave);
 					}
 					else if (id.Equals("end"))
 					{
-						_endCave = new EndCave(id);
+						_endCave = new EndCave(id, this);
 						_caves.Add(_endCave);
 					}
 					else if (char.IsUpper(id[0]))
 					{
-						_caves.Add(new LargeCave(id));
+						_caves.Add(new LargeCave(id, this));
 					}
 					else
 					{
-						_caves.Add(new SmallCave(id));
+						_caves.Add(new SmallCave(id, this));
 					}
 				}
 			}
@@ -142,7 +148,7 @@ public class Day12 : PuzzleBase
 
 	public class StartCave : Cave
 	{
-		public StartCave(string id) : base(id) { }
+		public StartCave(string id, CaveSystem caveSystem) : base(id, caveSystem) { }
 		
 		public override bool CanVisit(Route route)
 		{
@@ -152,24 +158,48 @@ public class Day12 : PuzzleBase
 
 	public class EndCave : Cave
 	{
-		public EndCave(string id) : base(id) { }
+		public EndCave(string id, CaveSystem caveSystem) : base(id, caveSystem) { }
 	}
 
 	public class SmallCave : Cave
 	{
 		protected const int MAX_VISITS = 1;
+		protected const int MAX_VISITS_IF_REVISITS_ALLOWED = 2;
 		
-		public SmallCave(string id) : base(id) { }
+		public SmallCave(string id, CaveSystem caveSystem) : base(id, caveSystem) { }
 		
 		public override bool CanVisit(Route route)
 		{
-			return route.VisitedCaves.Count(cave => cave == this) < MAX_VISITS;
+			int timesVisitedThisCave = route.VisitedCaves.Count(cave => cave == this);
+			
+			if (_caveSystem.CanRevisitOneSmallCave)
+			{
+				// If this cave is below the soft limit, it can be visited
+				if (timesVisitedThisCave < MAX_VISITS)
+				{
+					return true;
+				}
+
+				// If this cave is below the hard limit, it can be visited if no other small caves are over the soft limit
+				if (timesVisitedThisCave < MAX_VISITS_IF_REVISITS_ALLOWED)
+				{
+					Cave revisitedSmallCave = route.VisitedCaves
+						.Where(cave => cave is SmallCave)
+						.FirstOrDefault(smallCave => route.VisitedCaves.Count(cave => cave == smallCave) > MAX_VISITS);
+
+					return revisitedSmallCave == null || revisitedSmallCave == this;
+				}
+				
+				return false;
+			}
+			
+			return timesVisitedThisCave < MAX_VISITS;
 		}
 	}
 
 	public class LargeCave : Cave
 	{
-		public LargeCave(string id) : base(id) { }
+		public LargeCave(string id, CaveSystem caveSystem) : base(id, caveSystem) { }
 	}
 
 	public abstract class Cave
@@ -177,9 +207,12 @@ public class Day12 : PuzzleBase
 		public string ID { get; }
 		public List<Cave> ConnectedCaves { get; } = new List<Cave>();
 
-		protected Cave(string id)
+		protected readonly CaveSystem _caveSystem;
+
+		protected Cave(string id, CaveSystem caveSystem)
 		{
 			ID = id;
+			_caveSystem = caveSystem;
 		}
 
 		public void AddConnectionToCave(Cave connectedCave)
@@ -259,6 +292,6 @@ public class Day12 : PuzzleBase
 
 	protected override void ExecutePuzzle2()
 	{
-		
+		ExecutePuzzle(true);
 	}
 }
