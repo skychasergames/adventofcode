@@ -8,4 +8,9 @@ public class IntGrid : GridBase<int>
 	{
 		return int.Parse(value);
 	}
+
+	protected override bool Compare(int a, int b)
+	{
+		return a == b;
+	}
 }

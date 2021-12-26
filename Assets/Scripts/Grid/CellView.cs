@@ -16,7 +16,10 @@ public class CellView : MonoBehaviour
 	
 	public void SetText(string text)
 	{
-		_valueText.text = text;
+		if (_valueText != null)
+		{
+			_valueText.text = text;
+		}
 	}
 
 	public void SetBackgroundColor(Color color)
