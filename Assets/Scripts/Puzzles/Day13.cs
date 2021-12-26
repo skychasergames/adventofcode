@@ -45,6 +45,11 @@ public class Day13 : PuzzleBase
 			_isExample ? _exampleGridWidth : _puzzleGridWidth,
 			_isExample ? _exampleGridHeight : _puzzleGridHeight
 		);
+
+		if (_executePuzzleCoroutine != null)
+		{
+			EditorCoroutineUtility.StopCoroutine(_executePuzzleCoroutine);
+		}
 	}
 	
 	protected override void ExecutePuzzle1()
@@ -127,10 +132,16 @@ public class Day13 : PuzzleBase
 		}
 
 		LogResult("Visible dots after folding", _grid.cells.Cast<bool>().Count(cell => cell == true));
+		_executePuzzleCoroutine = null;
 	}
 
 	protected override void ExecutePuzzle2()
 	{
-		
+		// Initialize grid
+		ResetGrid();
+
+		IEnumerable<string> dotCoordLines = _inputDataLines.Where(line => char.IsDigit(line[0]));
+		IEnumerable<string> foldLines = _inputDataLines.Where(line => char.IsLetter(line[0])); 
+		_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle(dotCoordLines, foldLines), this);
 	}
 }
