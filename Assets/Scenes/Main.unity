@@ -1169,8 +1169,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _exampleData: {fileID: 4900000, guid: 59024872e86f835439bef7d489447132, type: 3}
   _puzzleData: {fileID: 4900000, guid: aa45b971c922fdd43ae700fdaaa8e0dd, type: 3}
-  _puzzleIterations: 10
-  _stepInterval: 1
+  _puzzle1Iterations: 10
+  _puzzle2Iterations: 40
+  _stepInterval: 0.05
 --- !u!4 &1404184403
 Transform:
   m_ObjectHideFlags: 0
