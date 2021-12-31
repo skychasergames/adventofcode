@@ -74,13 +74,20 @@ public abstract class GridBase<TValue> : MonoBehaviour
 			for (int column = 0; column < columns; column++)
 			{
 				string cellData = lineCellData[column];
-				cells[column, row] = ParseValue(cellData);
+				TValue cell = ParseValue(cellData);
+				cells[column, row] = cell;
+				InitializeCell(column, row, cell);
 			}
 		}
 		
 		_enableRendering = true;
 		ClearCellViews();
 		CreateCellViews();
+	}
+
+	protected virtual void InitializeCell(int column, int row, TValue cell)
+	{
+		// Do additional setup stuff if required
 	}
 
 	public virtual void ClearCellViews()
@@ -352,6 +359,22 @@ public abstract class GridBase<TValue> : MonoBehaviour
 	public List<Vector2Int> GetAllNeighbourCoords(Vector2Int cell)
 	{
 		return GetAllNeighbourCoords(cell.x, cell.y);
+	}
+
+	public Vector2Int GetCoordsOfCellValue(TValue cellValue)
+	{
+		for (int row = 0; row < rows; row++)
+		{
+			for (int column = 0; column < columns; column++)
+			{
+				if (Compare(cells[column, row], cellValue))
+				{
+					return new Vector2Int(column, row);
+				}
+			}
+		}
+
+		throw new NullReferenceException("Cell value " + cellValue + " was not found in grid");
 	}
 	#endregion
 }
