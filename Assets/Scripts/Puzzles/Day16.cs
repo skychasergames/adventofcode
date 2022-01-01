@@ -1,15 +1,15 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using NaughtyAttributes;
-using Unity.EditorCoroutines.Editor;
-using UnityEditor;
 using UnityEngine;
 
 public class Day16 : PuzzleBase
 {
+	[SerializeField] protected TextAsset _puzzle2ExampleData = null;
+
 	protected override void ExecutePuzzle1()
 	{
 		foreach (string line in _inputDataLines)
@@ -17,7 +17,7 @@ public class Day16 : PuzzleBase
 			LogResult("Transmission Hex", line);
 			
 			string transmissionBinary = ConvertHexToBinary(line);
-			LogResult("Transmission Binary", transmissionBinary);
+			//LogResult("Transmission Binary", transmissionBinary);
 
 			Packet packet = CreatePacket(transmissionBinary, out string remainingData);
 			//LogPacket(packet, 0);
@@ -36,7 +36,7 @@ public class Day16 : PuzzleBase
 		{
 			Log("Literal Value Packet >> " + depth);
 			LogResult(" -> Version", packet.Version);
-			LogResult(" -> Payload", literalValuePacket.DecodedData);
+			LogResult(" -> Payload", literalValuePacket.GetValue());
 		}
 		else if (packet is OperatorPacket operatorPacket)
 		{
@@ -69,12 +69,35 @@ public class Day16 : PuzzleBase
 	{
 		ReadPacketBinary(packetBinary, out int version, out int typeId, out string encodedData);
 		
-		if (typeId == 4)
+		switch (typeId)
 		{
-			return new LiteralValuePacket(version, typeId, encodedData, out remainingData);
+		case 0:
+			return new SumOperatorPacket(version, encodedData, out remainingData);
+			
+		case 1:
+			return new ProductOperatorPacket(version, encodedData, out remainingData);
+			
+		case 2:
+			return new MinimumOperatorPacket(version, encodedData, out remainingData);
+			
+		case 3:
+			return new MaximumOperatorPacket(version, encodedData, out remainingData);
+			
+		case 4:
+			return new LiteralValuePacket(version, encodedData, out remainingData);
+			
+		case 5:
+			return new GreaterThanOperatorPacket(version, encodedData, out remainingData);
+			
+		case 6:
+			return new LessThanOperatorPacket(version, encodedData, out remainingData);
+				
+		case 7:
+			return new EqualToOperatorPacket(version, encodedData, out remainingData);
+			
+		default:
+			throw new InvalidDataException("TypeId " + typeId + " is not valid");
 		}
-
-		return new OperatorPacket(version, typeId, encodedData, out remainingData);
 	}
 
 	private static void ReadPacketBinary(string packetBinary, out int version, out int typeId, out string encodedData)
@@ -82,8 +105,8 @@ public class Day16 : PuzzleBase
 		const int versionLength = 3;
 		const int typeIdLength = 3;
 
-		version = ConvertBinaryToDec(packetBinary.Substring(0, versionLength));
-		typeId = ConvertBinaryToDec(packetBinary.Substring(versionLength, typeIdLength));
+		version = (int)ConvertBinaryToDec(packetBinary.Substring(0, versionLength));
+		typeId = (int)ConvertBinaryToDec(packetBinary.Substring(versionLength, typeIdLength));
 		encodedData = packetBinary.Substring(versionLength + typeIdLength);
 	}
 
@@ -101,33 +124,37 @@ public class Day16 : PuzzleBase
 		return binaryBuilder.ToString();
 	}
 
-	private static int ConvertBinaryToDec(string binary)
+	private static long ConvertBinaryToDec(string binary)
 	{
-		return (int)Convert.ToInt64(binary, 2);
+		return Convert.ToInt64(binary, 2);
 	}
 
 	private abstract class Packet
 	{
 		public int Version { get; }
-		public int TypeId { get; }
+		public abstract long GetValue();
 
-		public Packet(int version, int typeId)
+		public Packet(int version)
 		{
 			Version = version;
-			TypeId = typeId;
 		}
 	}
 	
 	private class LiteralValuePacket : Packet
 	{
-		public int DecodedData { get; }
-
-		public LiteralValuePacket(int version, int typeId, string encodedData, out string remainingData) : base(version, typeId)
+		private long _decodedData;
+		
+		public LiteralValuePacket(int version, string encodedData, out string remainingData) : base(version)
 		{
-			DecodedData = DecodeData(encodedData, out remainingData);
+			_decodedData = DecodeData(encodedData, out remainingData);
 		}
 
-		private int DecodeData(string encodedData, out string remainingData)
+		public override long GetValue()
+		{
+			return _decodedData;
+		}
+
+		private long DecodeData(string encodedData, out string remainingData)
 		{
 			StringBuilder binaryBuilder = new StringBuilder();
 			
@@ -150,11 +177,11 @@ public class Day16 : PuzzleBase
 		}
 	}
 
-	private class OperatorPacket : Packet
+	private abstract class OperatorPacket : Packet
 	{
 		public List<Packet> SubPackets { get; }
 
-		public OperatorPacket(int version, int typeId, string encodedData, out string remainingData) : base(version, typeId)
+		protected OperatorPacket(int version, string encodedData, out string remainingData) : base(version)
 		{
 			SubPackets = DecodeData(encodedData, out remainingData);
 		}
@@ -170,7 +197,7 @@ public class Day16 : PuzzleBase
 				
 				// Determine how long the data string is
 				string subPacketDataLengthBinary = encodedData.Substring(1, 15);
-				int subPacketDataLength = ConvertBinaryToDec(subPacketDataLengthBinary);
+				int subPacketDataLength = (int)ConvertBinaryToDec(subPacketDataLengthBinary);
 
 				// Create the sub-packets
 				string subPacketData = encodedData.Substring(1 + 15, subPacketDataLength);
@@ -190,7 +217,7 @@ public class Day16 : PuzzleBase
 				
 				// Determine how many sub-packets there are
 				string subPacketCountBinary = encodedData.Substring(1, 11);
-				int subPacketCount = ConvertBinaryToDec(subPacketCountBinary);
+				int subPacketCount = (int)ConvertBinaryToDec(subPacketCountBinary);
 
 				// Create the sub-packets
 				string subPacketData = encodedData.Substring(1 + 11);
@@ -208,8 +235,121 @@ public class Day16 : PuzzleBase
 		}
 	}
 
+	private class SumOperatorPacket : OperatorPacket
+	{
+		public SumOperatorPacket(int version, string encodedData, out string remainingData)
+			: base(version, encodedData, out remainingData) { }
+
+		public override long GetValue()
+		{
+			return SubPackets.Sum(subPacket => subPacket.GetValue());
+		}
+	}
+
+	private class ProductOperatorPacket : OperatorPacket
+	{
+		public ProductOperatorPacket(int version, string encodedData, out string remainingData)
+			: base(version, encodedData, out remainingData) { }
+
+		public override long GetValue()
+		{
+			return SubPackets.Aggregate(1L, (current, subPacket) => current * subPacket.GetValue());
+		}
+	}
+
+	private class MinimumOperatorPacket : OperatorPacket
+	{
+		public MinimumOperatorPacket(int version, string encodedData, out string remainingData)
+			: base(version, encodedData, out remainingData) { }
+
+		public override long GetValue()
+		{
+			return SubPackets.Min(subPacket => subPacket.GetValue());
+		}
+	}
+
+	private class MaximumOperatorPacket : OperatorPacket
+	{
+		public MaximumOperatorPacket(int version, string encodedData, out string remainingData)
+			: base(version, encodedData, out remainingData) { }
+
+		public override long GetValue()
+		{
+			return SubPackets.Max(subPacket => subPacket.GetValue());
+		}
+	}
+
+	private class GreaterThanOperatorPacket : OperatorPacket
+	{
+		public GreaterThanOperatorPacket(int version, string encodedData, out string remainingData)
+			: base(version, encodedData, out remainingData) { }
+
+		public override long GetValue()
+		{
+			if (SubPackets.Count != 2)
+			{
+				throw new InvalidDataException("GreaterThanOperatorPacket requires exactly 2 sub-packets (found " + SubPackets.Count + ")");
+			}
+
+			return SubPackets[0].GetValue() > SubPackets[1].GetValue() ? 1 : 0;
+		}
+	}
+
+	private class LessThanOperatorPacket : OperatorPacket
+	{
+		public LessThanOperatorPacket(int version, string encodedData, out string remainingData)
+			: base(version, encodedData, out remainingData) { }
+
+		public override long GetValue()
+		{
+			if (SubPackets.Count != 2)
+			{
+				throw new InvalidDataException("LessThanOperatorPacket requires exactly 2 sub-packets (found " + SubPackets.Count + ")");
+			}
+
+			return SubPackets[0].GetValue() < SubPackets[1].GetValue() ? 1 : 0;
+		}
+	}
+
+	private class EqualToOperatorPacket : OperatorPacket
+	{
+		public EqualToOperatorPacket(int version, string encodedData, out string remainingData)
+			: base(version, encodedData, out remainingData) { }
+
+		public override long GetValue()
+		{
+			if (SubPackets.Count != 2)
+			{
+				throw new InvalidDataException("EqualToOperatorPacket requires exactly 2 sub-packets (found " + SubPackets.Count + ")");
+			}
+
+			return SubPackets[0].GetValue() == SubPackets[1].GetValue() ? 1 : 0;
+		}
+	}
+
+	protected override void OnTestPuzzle2Button()
+	{
+		_isExample = true;
+		ParseInputData(_puzzle2ExampleData);
+		ExecutePuzzle2();
+	}
+	
 	protected override void ExecutePuzzle2()
 	{
-		
+		foreach (string line in _inputDataLines)
+		{
+			LogResult("Transmission Hex", line);
+			
+			string transmissionBinary = ConvertHexToBinary(line);
+			//LogResult("Transmission Binary", transmissionBinary);
+
+			Packet packet = CreatePacket(transmissionBinary, out string remainingData);
+			//LogPacket(packet, 0);
+			//LogResult("Extraneous data", remainingData);
+
+			long value = packet.GetValue();
+
+			LogResult("Calculated Packet Value", value);
+		}
 	}
 }

@@ -11,7 +11,7 @@ public abstract class PuzzleBase : MonoBehaviour
 	protected bool _isExample = false;
 	
 	[Button("Test Puzzle 1")]
-	protected void OnTestPuzzle1Button()
+	protected virtual void OnTestPuzzle1Button()
 	{
 		_isExample = true;
 		ParseInputData(_exampleData);
@@ -19,7 +19,7 @@ public abstract class PuzzleBase : MonoBehaviour
 	}
 	
 	[Button("Execute Puzzle 1")]
-	protected void OnExecutePuzzle1Button()
+	protected virtual void OnExecutePuzzle1Button()
 	{
 		_isExample = false;
 		ParseInputData(_puzzleData);
@@ -27,7 +27,7 @@ public abstract class PuzzleBase : MonoBehaviour
 	}
 	
 	[Button("Test Puzzle 2")]
-	protected void OnTestPuzzle2Button()
+	protected virtual void OnTestPuzzle2Button()
 	{
 		_isExample = true;
 		ParseInputData(_exampleData);
@@ -35,7 +35,7 @@ public abstract class PuzzleBase : MonoBehaviour
 	}
 	
 	[Button("Execute Puzzle 2")]
-	protected void OnExecutePuzzle2Button()
+	protected virtual void OnExecutePuzzle2Button()
 	{
 		_isExample = false;
 		ParseInputData(_puzzleData);

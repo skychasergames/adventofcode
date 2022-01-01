@@ -1324,6 +1324,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _exampleData: {fileID: 4900000, guid: 20217683d4a5fd647b26f1d94ae5ad23, type: 3}
   _puzzleData: {fileID: 4900000, guid: cac7995e9594b6c46be723220b656a3b, type: 3}
+  _puzzle2ExampleData: {fileID: 4900000, guid: 4d2872888bbc6814ca812fb14db842f0, type: 3}
 --- !u!4 &1393441336
 Transform:
   m_ObjectHideFlags: 0
