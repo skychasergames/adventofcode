@@ -1,13 +1,19 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 public abstract class GridBase<TValue> : MonoBehaviour
 {
+	public enum RenderingCullingMode
+	{
+		DisableAllRendering,
+		LimitCellViews
+	}
+	
+	
 	[SerializeField] protected CellView _cellViewPrefab = null;
+	[SerializeField] protected RenderingCullingMode _renderingCullingMode = RenderingCullingMode.LimitCellViews;
 	[SerializeField] protected bool _onlyRenderCellsWithValues = false;
 	[SerializeField] protected int _disableRenderingAboveCellCount = 10000;
 	[SerializeField] protected Vector2 _cellSize = new Vector2(25, 25);
@@ -103,6 +109,20 @@ public abstract class GridBase<TValue> : MonoBehaviour
 
 	protected virtual void CreateCellViews()
 	{
+		switch (_renderingCullingMode)
+		{
+		case RenderingCullingMode.DisableAllRendering:
+			_enableRendering = (rows * columns) <= _disableRenderingAboveCellCount;
+			if (!_enableRendering)
+			{
+				Debug.LogWarning("[Grid] Grid size exceeds maximum CellView count, rendering is disabled.");
+			}
+			break;
+		
+		case RenderingCullingMode.LimitCellViews:
+			break;
+		}
+		
 		for (int row = 0; row < rows; row++)
 		{
 			for (int column = 0; column < columns; column++)

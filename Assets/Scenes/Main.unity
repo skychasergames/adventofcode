@@ -306,6 +306,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cellViewPrefab: {fileID: 1656790659944282751, guid: 7553183fa3b741145ab158bc669467b0, type: 3}
+  _renderingCullingMode: 1
   _onlyRenderCellsWithValues: 0
   _disableRenderingAboveCellCount: 100000
   _cellSize: {x: 25, y: 25}
@@ -439,6 +440,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cellViewPrefab: {fileID: 1656790659944282751, guid: 1b61945dfe81ae44b95522f545c8419e, type: 3}
+  _renderingCullingMode: 0
   _onlyRenderCellsWithValues: 0
   _disableRenderingAboveCellCount: 10000
   _cellSize: {x: 25, y: 25}
@@ -1063,6 +1065,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cellViewPrefab: {fileID: 1656790659944282751, guid: c273d2d725ef69248a6810ed81bdcc11, type: 3}
+  _renderingCullingMode: 1
   _onlyRenderCellsWithValues: 1
   _disableRenderingAboveCellCount: 10000
   _cellSize: {x: 25, y: 25}
@@ -1777,6 +1780,9 @@ MonoBehaviour:
   _puzzleData: {fileID: 4900000, guid: 2411b8347789e524295067aff4f78440, type: 3}
   _map: {fileID: 445290055}
   _highlightColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  _puzzle2MapSizeMultiplier: {x: 5, y: 5}
+  _cyclesPerUpdateLoop: 20000
+  _updateLoopInterval: 0.2
 --- !u!4 &1751213938
 Transform:
   m_ObjectHideFlags: 0
@@ -2241,6 +2247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cellViewPrefab: {fileID: 1656790659944282751, guid: 7553183fa3b741145ab158bc669467b0, type: 3}
+  _renderingCullingMode: 1
   _onlyRenderCellsWithValues: 0
   _disableRenderingAboveCellCount: 100000
   _cellSize: {x: 50, y: 50}
@@ -2295,6 +2302,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _cellViewPrefab: {fileID: 1656790659944282751, guid: d0b5aeea24f650946b30f828210ff120, type: 3}
+  _renderingCullingMode: 1
   _onlyRenderCellsWithValues: 1
   _disableRenderingAboveCellCount: 100000
   _cellSize: {x: 25, y: 25}
