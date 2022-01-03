@@ -94,6 +94,7 @@ public class Day17 : PuzzleBase
 		yield return WaitToAdvanceExecution(interval);
 
 		int highestPointInSuccessfulLines = int.MinValue;
+		int successfulLines = 0;
 		List<int> possibleXSpeeds = GetPossibleXSpeeds();
 		List<int> possibleYSpeeds = GetPossibleYSpeeds();
 		foreach (int x in possibleXSpeeds)
@@ -105,6 +106,8 @@ public class Day17 : PuzzleBase
 
 				if (hitTarget)
 				{
+					successfulLines++;
+
 					int highestPointInThisLine = positions.Select(position => position.y).Max();
 					if (highestPointInThisLine > highestPointInSuccessfulLines)
 					{
@@ -118,9 +121,8 @@ public class Day17 : PuzzleBase
 		}
 
 		LogResult("Total lines", _trajectoryRendererParent.childCount);
-		
+		LogResult("Successful lines", successfulLines);
 		LogResult("Highest point", highestPointInSuccessfulLines);
-		
 		
 		EditorApplication.QueuePlayerLoopUpdate();
 	}
@@ -183,22 +185,22 @@ public class Day17 : PuzzleBase
 	}
 	
 	// Logic for calculating possible X speeds
-	//   x=0
-	//    |
-	//    v
-	// ..............................
-	// .......................TTTTTTT
-	// ...S...................TTTTTTT
-	// .......................TTTTTTT
-	// n......5.....4...3..2.1#TTTTTT  <- If X < first column, then X must be >= the values on this speed curve (in this example, X must be >= 6).
-	// .......................#######  <- Any X which falls within the target area columns is also valid (may land on first step). Any > last column is invalid because it would overshoot.
-	// ..............................
+	//     x=0
+	//      |
+	//      v
+	// ...............................
+	// ........................TTTTTTT
+	// ....S...................TTTTTTT
+	// ........................TTTTTTT
+	// n..6.....5....4...3..2.1#TTTTTT  <- If X < first column, then X must be >= the values on this speed curve (in this example, X must be >= 6).
+	// ........................#######  <- Any X which falls within the target area columns is also valid (may land on first step). Any > last column is invalid because it would overshoot.
+	// ...............................
 	
 	private List<int> GetPossibleXSpeeds()
 	{
 		List<int> possibleXSpeeds = new List<int>();
 		
-		int minX = 1;
+		int minX = 0;
 		for (int distanceToTargetArea = _targetArea.xMin; distanceToTargetArea >= 0; distanceToTargetArea -= minX)
 		{
 			minX++;
