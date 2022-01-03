@@ -27,6 +27,7 @@ public class Day18 : PuzzleBase
 
 		if (_isExample)
 		{
+			Debug.Log("--- Single Explode ---\n");
 			ParseInputData(_exampleDataSingleExplode);
 			foreach (string line in _inputDataLines)
 			{
@@ -37,6 +38,16 @@ public class Day18 : PuzzleBase
 				{
 					Debug.Log("Exploded Pair to: " + pair);
 				}
+			}
+			
+			Debug.Log("------ Reduction ------\n");
+			ParseInputData(_exampleDataReduction);
+			foreach (string line in _inputDataLines)
+			{
+				Pair pair = ParsePair(line);
+				Debug.Log("Parsed Pair: " + pair);
+
+				pair.Reduce();
 			}
 		}
 	}
@@ -103,6 +114,7 @@ public class Day18 : PuzzleBase
 		public abstract bool LookForPairToExplode();
 		public abstract Number FindRightmostNumber();
 		public abstract Number FindLeftmostNumber();
+		public abstract bool LookForNumberToSplit();
 	}
 
 	private class Pair : PairItemBase
@@ -128,6 +140,26 @@ public class Day18 : PuzzleBase
 			else
 			{
 				Debug.LogError("Tried to push 3+ items onto Pair: " + this);
+			}
+		}
+
+		public void Reduce()
+		{
+			while (true)
+			{
+				if (LookForPairToExplode())
+				{
+					Debug.Log("Pair Exploded: " + this);
+				}
+				else if (LookForNumberToSplit())
+				{
+					Debug.Log("Pair Split: " + this);
+				}
+				else
+				{
+					Debug.Log("Pair Reduction complete: " + this);
+					break;
+				}
 			}
 		}
 
@@ -162,8 +194,6 @@ public class Day18 : PuzzleBase
 			// --- Local method ---
 			void ExplodeChild()
 			{
-				Debug.Log("Exploding Pair: " + explodingPair);
-
 				Number leftAdjacentNumber = FindLeftAdjacentNumber(explodingPair);
 				Number rightAdjacentNumber = FindRightAdjacentNumber(explodingPair);
 				leftAdjacentNumber?.AddValue(leftNumber.Value);
@@ -235,20 +265,21 @@ public class Day18 : PuzzleBase
 			return Left.FindLeftmostNumber();
 		}
 
-		public void SplitLeft()
+		public override bool LookForNumberToSplit()
 		{
-			if (Left is Number leftNumber)
+			if (Left is Number leftNumber && Left.LookForNumberToSplit())
 			{
 				Left = leftNumber.Split();
+				return true;
 			}
-		}
-
-		public void SplitRight()
-		{
-			if (Right is Number rightNumber)
+			
+			if (Right is Number rightNumber && Right.LookForNumberToSplit())
 			{
 				Right = rightNumber.Split();
+				return true;
 			}
+			
+			return Left.LookForNumberToSplit() || Right.LookForNumberToSplit();
 		}
 
 		public override string ToString()
@@ -285,6 +316,11 @@ public class Day18 : PuzzleBase
 		public override bool LookForPairToExplode()
 		{
 			return false;
+		}
+
+		public override bool LookForNumberToSplit()
+		{
+			return Value >= 10;
 		}
 
 		public override Number FindLeftmostNumber()
