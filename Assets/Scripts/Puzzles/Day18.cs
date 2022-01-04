@@ -91,6 +91,62 @@ public class Day18 : PuzzleBase
 				int magnitude = pair.GetMagnitude();
 				Debug.Log("Magnitude: " + magnitude);
 			}
+			
+			Debug.Log("------ Full Example ------\n");
+			ParseInputData(_exampleData);
+			{
+				// Parse the starting Pair
+				Pair sumPair = ParsePair(_inputDataLines[0]);
+
+				// Iterate through other Pairs, adding and reducing each in turn
+				for (int i = 1; i < _inputDataLines.Length; i++)
+				{
+					Pair pairToAdd = ParsePair(_inputDataLines[i]);
+					Debug.Log("Adding Pairs " + sumPair + " and " + pairToAdd);
+
+					// Sum the two Pairs
+					Pair newSumPair = new Pair();
+					newSumPair.PushItem(sumPair);
+					newSumPair.PushItem(pairToAdd);
+
+					// Reduce if necessary
+					newSumPair.Reduce();
+
+					// Store the new sum
+					sumPair = newSumPair;
+				}
+				
+				// Calculate magnitude of final sum
+				int magnitude = sumPair.GetMagnitude();
+				Debug.Log("Magnitude: " + magnitude);
+			}
+		}
+		else	// -- if (_isExample) else
+		{
+			// Parse the starting Pair
+			Pair sumPair = ParsePair(_inputDataLines[0]);
+
+			// Iterate through other Pairs, adding and reducing each in turn
+			for (int i = 1; i < _inputDataLines.Length; i++)
+			{
+				Pair pairToAdd = ParsePair(_inputDataLines[i]);
+				Debug.Log("Adding Pairs " + sumPair + " and " + pairToAdd);
+
+				// Sum the two Pairs
+				Pair newSumPair = new Pair();
+				newSumPair.PushItem(sumPair);
+				newSumPair.PushItem(pairToAdd);
+
+				// Reduce if necessary
+				newSumPair.Reduce();
+
+				// Store the new sum
+				sumPair = newSumPair;
+			}
+				
+			// Calculate magnitude of final sum
+			int magnitude = sumPair.GetMagnitude();
+			Debug.Log("Magnitude: " + magnitude);
 		}
 	}
 
