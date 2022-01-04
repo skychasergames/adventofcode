@@ -77,6 +77,20 @@ public class Day18 : PuzzleBase
 					sumPair = newSumPair;
 				}
 			}
+			
+			Debug.Log("------ Magnitude ------\nPop pop!");
+			ParseInputData(_exampleDataMagnitude);
+			foreach (string line in _inputDataLines)
+			{
+				Pair pair = ParsePair(line);
+				Debug.Log("Parsed Pair: " + pair);
+				
+				// Reduce if necessary
+				pair.Reduce();
+				
+				int magnitude = pair.GetMagnitude();
+				Debug.Log("Magnitude: " + magnitude);
+			}
 		}
 	}
 
@@ -162,6 +176,7 @@ public class Day18 : PuzzleBase
 		public abstract Number FindLeftmostNumber();
 		public abstract bool LookForPairToExplode();
 		public abstract bool LookForNumberToSplit();
+		public abstract int GetMagnitude();
 	}
 
 	private class Pair : PairItemBase
@@ -357,6 +372,11 @@ public class Day18 : PuzzleBase
 			return false;
 		}
 
+		public override int GetMagnitude()
+		{
+			return (3 * Left.GetMagnitude()) + (2 * Right.GetMagnitude());
+		}
+
 		public override string ToString()
 		{
 			if (isExploding)
@@ -418,6 +438,11 @@ public class Day18 : PuzzleBase
 		public override Number FindRightmostNumber()
 		{
 			return this;
+		}
+
+		public override int GetMagnitude()
+		{
+			return Value;
 		}
 
 		public override string ToString()
