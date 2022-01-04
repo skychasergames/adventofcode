@@ -519,6 +519,34 @@ public class Day18 : PuzzleBase
 
 	protected override void ExecutePuzzle2()
 	{
-		
+		int largestMagnitude = int.MinValue;
+		for (int a = 0; a < _inputDataLines.Length; a++)
+		{
+			for (int b = 0; b < _inputDataLines.Length; b++)
+			{
+				if (a == b)
+				{
+					continue;
+				}
+				
+				Pair pairA = ParsePair(_inputDataLines[a]);
+				Pair pairB = ParsePair(_inputDataLines[b]);
+				Debug.Log("Adding Pairs " + pairA + " and " + pairB);
+				
+				// Sum the two Pairs
+				Pair newSumPair = new Pair();
+				newSumPair.PushItem(pairA);
+				newSumPair.PushItem(pairB);
+
+				// Reduce if necessary
+				newSumPair.Reduce();
+
+				// Store the magnitude
+				largestMagnitude = Mathf.Max(largestMagnitude, newSumPair.GetMagnitude());
+			}
+		}
+				
+		// Calculate magnitude of final sum
+		Debug.Log("Largest Magnitude: " + largestMagnitude);
 	}
 }
