@@ -49,6 +49,34 @@ public class Day18 : PuzzleBase
 
 				pair.Reduce();
 			}
+			
+			Debug.Log("------ Sum List ------\n");
+			foreach (TextAsset sumList in _exampleDataSumLists)
+			{
+				Debug.Log("Parsing new Sum List...");
+				ParseInputData(sumList);
+
+				// Parse the starting Pair
+				Pair sumPair = ParsePair(_inputDataLines[0]);
+				
+				// Iterate through other Pairs, adding and reducing each in turn
+				for (int i = 1; i < _inputDataLines.Length; i++)
+				{
+					Pair pairToAdd = ParsePair(_inputDataLines[i]);
+					Debug.Log("Adding Pairs " + sumPair + " and " + pairToAdd);
+					
+					// Sum the two Pairs
+					Pair newSumPair = new Pair();
+					newSumPair.PushItem(sumPair);
+					newSumPair.PushItem(pairToAdd);
+
+					// Reduce if necessary
+					newSumPair.Reduce();
+
+					// Store the new sum
+					sumPair = newSumPair;
+				}
+			}
 		}
 	}
 
@@ -63,14 +91,13 @@ public class Day18 : PuzzleBase
 				if (nestedPairs.Count == 0)
 				{
 					// Start the first pair
-					Pair newPair = new Pair(null, 0);
-					nestedPairs.Push(newPair);
+					nestedPairs.Push(new Pair());
 				}
 				else
 				{
 					// Start a new nested Pair
 					Pair parent = nestedPairs.Peek();
-					Pair newPair = new Pair(parent, nestedPairs.Count);
+					Pair newPair = new Pair();
 					parent.PushItem(newPair);
 					nestedPairs.Push(newPair);
 				}
@@ -92,8 +119,7 @@ public class Day18 : PuzzleBase
 			{
 				// Add a Number to the current Pair
 				Pair parent = nestedPairs.Peek();
-				Number newNumber = new Number(value, parent, nestedPairs.Count);
-				parent.PushItem(newNumber);
+				parent.PushItem(new Number(value));
 			}
 		}
 
@@ -102,18 +128,39 @@ public class Day18 : PuzzleBase
 
 	private abstract class PairItemBase
 	{
-		public Pair Parent { get; }
-		public int Depth { get; }
+		public Pair Parent { get; private set; } = null;
 
-		protected PairItemBase(Pair parent, int depth)
+		// Reduction flags - Used for debug logging
+		protected internal bool isExploding = false;
+		protected internal bool isSplitting = false;
+		
+		protected internal void SetParent(Pair parent)
 		{
 			Parent = parent;
-			Depth = depth;
+		}
+		
+		protected int GetDepth()
+		{
+			int depth = 0;
+			Pair parent = Parent;
+			while (parent != null)
+			{
+				parent = parent.Parent;
+				depth++;
+			}
+
+			return depth;
 		}
 
-		public abstract bool LookForPairToExplode();
+		protected internal virtual void ClearReductionFlags()
+		{
+			isExploding = false;
+			isSplitting = false;
+		}
+
 		public abstract Number FindRightmostNumber();
 		public abstract Number FindLeftmostNumber();
+		public abstract bool LookForPairToExplode();
 		public abstract bool LookForNumberToSplit();
 	}
 
@@ -121,21 +168,18 @@ public class Day18 : PuzzleBase
 	{
 		public PairItemBase Left { get; private set; }
 		public PairItemBase Right { get; private set; }
-
-		public Pair(Pair parent, int depth) : base(parent, depth)
-		{
-			
-		}
-
+		
 		public void PushItem(PairItemBase item)
 		{
 			if (Left == null)
 			{
 				Left = item;
+				item.SetParent(this);
 			}
 			else if (Right == null)
 			{
 				Right = item;
+				item.SetParent(this);
 			}
 			else
 			{
@@ -147,6 +191,8 @@ public class Day18 : PuzzleBase
 		{
 			while (true)
 			{
+				ClearReductionFlags();
+				
 				if (LookForPairToExplode())
 				{
 					Debug.Log("Pair Exploded: " + this);
@@ -157,15 +203,23 @@ public class Day18 : PuzzleBase
 				}
 				else
 				{
-					Debug.Log("Pair Reduction complete: " + this);
+					Debug.Log("Pair Reduction complete: <b><color=white>" + this + "</color></b>");
 					break;
 				}
 			}
 		}
+		
+		protected internal override void ClearReductionFlags()
+		{
+			base.ClearReductionFlags();
+
+			Left?.ClearReductionFlags();
+			Right?.ClearReductionFlags();
+		}
 
 		public override bool LookForPairToExplode()
 		{
-			if (Left is Number leftNumber && Right is Number rightNumber && (Depth >= 4))
+			if (Left is Number leftNumber && Right is Number rightNumber && (GetDepth() >= 4))
 			{
 				Parent.ExplodeChild(this, leftNumber, rightNumber);
 				return true;
@@ -179,12 +233,16 @@ public class Day18 : PuzzleBase
 			if (explodingPair == Left)
 			{
 				ExplodeChild();
-				Left = new Number(0, this, Depth + 1);
+				Left = new Number(0);
+				Left.SetParent(this);
+				Left.isExploding = true;
 			}
 			else if (explodingPair == Right)
 			{
 				ExplodeChild();
-				Right = new Number(0, this, Depth + 1);
+				Right = new Number(0);
+				Right.SetParent(this);
+				Right.isExploding = true;
 			}
 			else
 			{
@@ -196,8 +254,18 @@ public class Day18 : PuzzleBase
 			{
 				Number leftAdjacentNumber = FindLeftAdjacentNumber(explodingPair);
 				Number rightAdjacentNumber = FindRightAdjacentNumber(explodingPair);
-				leftAdjacentNumber?.AddValue(leftNumber.Value);
-				rightAdjacentNumber?.AddValue(rightNumber.Value);
+
+				if (leftAdjacentNumber != null)
+				{
+					leftAdjacentNumber.AddValue(leftNumber.Value);
+					leftAdjacentNumber.isExploding = true;
+				}
+
+				if (rightAdjacentNumber != null)
+				{
+					rightAdjacentNumber.AddValue(rightNumber.Value);
+					rightAdjacentNumber.isExploding = true;
+				}
 			}
 		}
 
@@ -267,23 +335,40 @@ public class Day18 : PuzzleBase
 
 		public override bool LookForNumberToSplit()
 		{
-			if (Left is Number leftNumber && Left.LookForNumberToSplit())
+			if (Left.LookForNumberToSplit())
 			{
-				Left = leftNumber.Split();
+				if (Left is Number leftNumber)
+				{
+					Left = leftNumber.Split();
+				}
+
+				return true;
+			}
+			else if (Right.LookForNumberToSplit())
+			{
+				if (Right is Number rightNumber)
+				{
+					Right = rightNumber.Split();
+				}
+				
 				return true;
 			}
 			
-			if (Right is Number rightNumber && Right.LookForNumberToSplit())
-			{
-				Right = rightNumber.Split();
-				return true;
-			}
-			
-			return Left.LookForNumberToSplit() || Right.LookForNumberToSplit();
+			return false;
 		}
 
 		public override string ToString()
 		{
+			if (isExploding)
+			{
+				return "<b><color=yellow>" + $"[{Left},{Right}]" + "</color></b>";
+			}
+
+			if (isSplitting)
+			{
+				return "<b><color=cyan>" + $"[{Left},{Right}]" + "</color></b>";
+			}
+			
 			return $"[{Left},{Right}]";
 		}
 	}
@@ -292,7 +377,7 @@ public class Day18 : PuzzleBase
 	{
 		public int Value { get; private set; }
 
-		public Number(int value, Pair parent, int depth) : base(parent, depth)
+		public Number(int value) : base()
 		{
 			Value = value;
 		}
@@ -307,9 +392,11 @@ public class Day18 : PuzzleBase
 			int leftValue = Mathf.FloorToInt(Value / 2f);
 			int rightValue = Value - leftValue;
 			
-			Pair newPair = new Pair(Parent, Depth);
-			newPair.PushItem(new Number(leftValue, newPair, Depth + 1));
-			newPair.PushItem(new Number(rightValue, newPair, Depth + 1));
+			Pair newPair = new Pair();
+			newPair.PushItem(new Number(leftValue));
+			newPair.PushItem(new Number(rightValue));
+			newPair.SetParent(Parent);
+			newPair.isSplitting = true;
 			return newPair;
 		}
 
@@ -335,6 +422,16 @@ public class Day18 : PuzzleBase
 
 		public override string ToString()
 		{
+			if (isExploding)
+			{
+				return "<b><color=yellow>" + Value + "</color></b>";
+			}
+
+			if (isSplitting)
+			{
+				return "<b><color=cyan>" + Value + "</color></b>";
+			}
+			
 			return Value.ToString();
 		}
 	}
