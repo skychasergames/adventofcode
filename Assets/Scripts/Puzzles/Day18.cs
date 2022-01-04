@@ -1,30 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using NaughtyAttributes;
-using TMPro;
 using UnityEngine;
 
 public class Day18 : PuzzleBase
 {
-	[SerializeField] private TextMeshProUGUI _textMesh = null;
 	[SerializeField] protected TextAsset _exampleDataSingleExplode = null;
 	[SerializeField] protected TextAsset _exampleDataReduction = null;
 	[SerializeField] protected List<TextAsset> _exampleDataSumLists = null;
 	[SerializeField] protected TextAsset _exampleDataMagnitude = null;	// Pop pop!
 
-	[Button("Clear Text")]
-	private void ClearText()
-	{
-		_textMesh.SetText("");
-	}
-	
 	protected override void ExecutePuzzle1()
 	{
-		ClearText();
-
 		if (_isExample)
 		{
 			Debug.Log("--- Single Explode ---\n");
