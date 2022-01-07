@@ -137,6 +137,26 @@ public class Day19 : PuzzleBase
 		}
 
 		LogResult("Total beacons", lockedBeacons.Count);
+
+		int longestDistance = 0;
+		foreach (Scanner scannerA in calculatedScanners)
+		{
+			foreach (Scanner scannerB in calculatedScanners)
+			{
+				if (scannerA == scannerB)
+				{
+					continue;
+				}
+
+				int distance = CalculateManhattanDistance(scannerA, scannerB);
+				if (distance > longestDistance)
+				{
+					longestDistance = distance;
+				}
+			}
+		}
+
+		LogResult("Longest Manhattan Distance", longestDistance);
 		
 		_puzzleCoroutine = null;
 		
@@ -152,8 +172,16 @@ public class Day19 : PuzzleBase
 		}
 	}
 
+	private int CalculateManhattanDistance(Scanner scannerA, Scanner scannerB)
+	{
+		Vector3Int distance = Vector3Int.RoundToInt(scannerB.transform.position - scannerA.transform.position);
+		return Mathf.Abs(distance.x) + Mathf.Abs(distance.y) + Mathf.Abs(distance.z);
+	}
+
 	protected override void ExecutePuzzle2()
 	{
-		
+		ClearVisualization();
+
+		_puzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle(), this);
 	}
 }
