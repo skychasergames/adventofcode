@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IntGrid : GridBase<int>
+public class IntGrid : GridBase<int, StaticCellCollection<int>, StaticCellCollection<CellView>>
 {
 	protected override int ParseValue(string value)
 	{

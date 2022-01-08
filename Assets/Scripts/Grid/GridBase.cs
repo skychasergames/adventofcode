@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public abstract class GridBase<TValue> : MonoBehaviour
+public abstract class GridBase<TValue, TCellCollection, TCellViewCollection> : MonoBehaviour
+	where TCellCollection : CellCollectionBase<TValue>
+	where TCellViewCollection : CellCollectionBase<CellView>
 {
 	public enum RenderingCullingMode
 	{
@@ -18,11 +20,11 @@ public abstract class GridBase<TValue> : MonoBehaviour
 	[SerializeField] protected int _disableRenderingAboveCellCount = 10000;
 	[SerializeField] protected Vector2 _cellSize = new Vector2(25, 25);
 
-	public int columns { get; protected set; }
-	public int rows { get; protected set; }
-	public TValue[,] cells { get; protected set; }
+	public TCellCollection cells { get; protected set; } = null;
+	public int columns => cells.columns;
+	public int rows => cells.rows;
 	
-	protected CellView[,] _cellViews { get; set; }
+	protected TCellViewCollection _cellViews = null;
 	protected int _cellViewCount = 0;
 	protected bool _enableRendering = true;
 	
@@ -37,9 +39,7 @@ public abstract class GridBase<TValue> : MonoBehaviour
 	
 	public virtual void Initialize(int numColumns, int numRows)
 	{
-		columns = numColumns;
-		rows = numRows;
-		cells = new TValue[columns, rows];
+		cells = (TCellCollection)Activator.CreateInstance(typeof(TCellCollection), numColumns, numRows);
 		
 		_enableRendering = true;
 		ClearCellViews();
@@ -48,19 +48,20 @@ public abstract class GridBase<TValue> : MonoBehaviour
 
 	public virtual void Initialize(string[] gridData, string delimiter = "")
 	{
+		int numColumns;
 		if (!string.IsNullOrEmpty(delimiter))
 		{
-			columns = PuzzleBase.SplitString(gridData[0], delimiter).Length;
+			numColumns = PuzzleBase.SplitString(gridData[0], delimiter).Length;
 		}
 		else
 		{
 			// If there's no delimiter, we'll turn each individual char of the line into a cell
-			columns = gridData[0].Length;
+			numColumns = gridData[0].Length;
 		}
 
-		rows = gridData.Length;
+		int numRows = gridData.Length;
 		
-		cells = new TValue[columns, rows];
+		cells = (TCellCollection)Activator.CreateInstance(typeof(TCellCollection), numColumns, numRows);
 		for (int row = 0; row < rows; row++)
 		{
 			string lineData = gridData[row];
@@ -77,7 +78,7 @@ public abstract class GridBase<TValue> : MonoBehaviour
 				lineCellData = lineData.ToCharArray().Select(c => c.ToString()).ToArray();
 			}
 
-			for (int column = 0; column < columns; column++)
+			for (int column = 0; column < numColumns; column++)
 			{
 				string cellData = lineCellData[column];
 				TValue cell = ParseValue(cellData);
@@ -103,7 +104,7 @@ public abstract class GridBase<TValue> : MonoBehaviour
 			DestroyImmediate(transform.GetChild(0).gameObject);
 		}
 		
-		_cellViews = new CellView[columns, rows];
+		_cellViews = (TCellViewCollection)Activator.CreateInstance(typeof(TCellViewCollection), columns, rows);
 		_cellViewCount = 0;
 	}
 
@@ -165,7 +166,7 @@ public abstract class GridBase<TValue> : MonoBehaviour
 
 	public void ResizeGrid(int newColumns, int newRows)
 	{
-		TValue[,] newCells = new TValue[newColumns, newRows];
+		TCellCollection newCells = (TCellCollection)Activator.CreateInstance(typeof(TCellCollection), newColumns, newRows);
 		for (int row = 0; row < Mathf.Min(rows, newRows); row++)
 		{
 			for (int column = 0; column < Mathf.Min(columns, newColumns); column++)
@@ -207,8 +208,6 @@ public abstract class GridBase<TValue> : MonoBehaviour
 			}
 		}
 
-		columns = newColumns;
-		rows = newRows;
 		cells = newCells;
 	}
 	#endregion

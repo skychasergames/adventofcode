@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DijkstraGrid : GridBase<DijkstraGridCell>
+public class DijkstraGrid : GridBase<DijkstraGridCell, StaticCellCollection<DijkstraGridCell>, StaticCellCollection<CellView>>
 {
 	protected override DijkstraGridCell ParseValue(string value)
 	{

@@ -8,7 +8,6 @@ using UnityEngine;
 
 public class Scanner : MonoBehaviour
 {
-	[SerializeField] private Transform _graphic = null;
 	[SerializeField] private Transform _beaconContainer = null;
 
 	private Transform[] _beaconHolograms = null;

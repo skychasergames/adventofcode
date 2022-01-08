@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BoolGrid : GridBase<bool>
+public class BoolGrid : GridBase<bool, StaticCellCollection<bool>, StaticCellCollection<CellView>>
 {
 	protected override bool ParseValue(string value)
 	{
