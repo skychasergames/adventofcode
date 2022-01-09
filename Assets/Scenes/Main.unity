@@ -4186,11 +4186,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _exampleData: {fileID: 4900000, guid: 225856728b4ba6742a78b316965fd7d7, type: 3}
   _puzzleData: {fileID: 4900000, guid: a4f259e768d9d554ea880d8419657a49, type: 3}
-  _scoreToWin: 1000
-  _playerInterval: 0
+  _scoreToWinPuzzle1: 1000
+  _scoreToWinPuzzle2: 21
   _boardLength: 10
-  _deterministicDieSides: 100
   _rollsPerPlayerTurn: 3
+  _puzzle1DieSides: 100
+  _puzzle2DieSides: 3
 --- !u!4 &2147024257
 Transform:
   m_ObjectHideFlags: 0
