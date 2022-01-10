@@ -127,7 +127,7 @@ public class Scanner : MonoBehaviour
 		int roll = int.Parse(orientationString.Substring(9));
 
 		_beaconContainer.forward = GetForwardVector() * sign;
-		_beaconContainer.Rotate(Vector3.forward, roll, Space.Self);
+		_beaconContainer.Rotate(Vector3.forward, roll, UnityEngine.Space.Self);
 
 		// --- Local method ---
 		Vector3 GetForwardVector()
