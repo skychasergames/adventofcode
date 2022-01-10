@@ -1,6 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
+using NaughtyAttributes;
 using UnityEngine;
+
+public enum AmphipodSpaceType
+{
+	Hallway,
+	Junction,
+	Room,
+}
 
 public class AmphipodSpace : MonoBehaviour
 {
@@ -8,26 +16,36 @@ public class AmphipodSpace : MonoBehaviour
 	[SerializeField] private AmphipodSpace _downAdjacent = null;
 	[SerializeField] private AmphipodSpace _leftAdjacent = null;
 	[SerializeField] private AmphipodSpace _rightAdjacent = null;
+	[SerializeField] private AmphipodSpaceType _spaceType = AmphipodSpaceType.Hallway;
+	
+	[ShowIf("_spaceType", AmphipodSpaceType.Room)]
+	[SerializeField] private AmphipodType _roomType = AmphipodType.Amber;
 	
 	public AmphipodSpace UpAdjacent => _upAdjacent;
 	public AmphipodSpace DownAdjacent => _downAdjacent;
 	public AmphipodSpace LeftAdjacent => _leftAdjacent;
 	public AmphipodSpace RightAdjacent => _rightAdjacent;
-	
-	public bool IsOccupied { get; private set; }
+	public AmphipodSpaceType SpaceType => _spaceType;
+	public AmphipodType RoomType => _roomType;
 
-	public void Initialize(bool isOccupied)
+	public Amphipod OccupyingAmphipod { get; private set; }
+	public bool IsFree { get; private set; }
+
+	public void Initialize(Amphipod occupyingAmphipod, bool lockSpace)
 	{
-		IsOccupied = isOccupied;
+		OccupyingAmphipod = occupyingAmphipod;
+		IsFree = occupyingAmphipod == null && !lockSpace;
 	}
 
 	public void ClearSpace()
 	{
-		IsOccupied = false;
+		OccupyingAmphipod = null;
+		IsFree = true;
 	}
 
-	public void OccupySpace()
+	public void OccupySpace(Amphipod occupyingAmphipod)
 	{
-		IsOccupied = true;
+		OccupyingAmphipod = occupyingAmphipod;
+		IsFree = false;
 	}
 }

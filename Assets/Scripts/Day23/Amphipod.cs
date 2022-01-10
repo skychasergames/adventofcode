@@ -4,6 +4,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+public enum AmphipodType
+{
+	Amber,
+	Bronze,
+	Copper,
+	Desert
+}
+
 public class Amphipod : MonoBehaviour, IPointerClickHandler
 {
 	public enum AmphipodState
@@ -19,7 +27,7 @@ public class Amphipod : MonoBehaviour, IPointerClickHandler
 	
 	private Day23 _day23 = null;
 
-	public Day23.AmphipodType AmphipodType { get; private set; }
+	public AmphipodType AmphipodType { get; private set; }
 	public AmphipodState CurrentState { get; private set; } = AmphipodState.Uninitialized;
 	public AmphipodSpace CurrentSpace { get; private set; }
 
@@ -34,7 +42,7 @@ public class Amphipod : MonoBehaviour, IPointerClickHandler
 		_amphipodTypeLabel.text = "?";
 	}
 	
-	public void Initialize(Day23 day23, Day23.AmphipodType amphipodType)
+	public void Initialize(Day23 day23, AmphipodType amphipodType)
 	{
 		_day23 = day23;
 		AmphipodType = amphipodType;
@@ -65,6 +73,37 @@ public class Amphipod : MonoBehaviour, IPointerClickHandler
 		else if (Input.GetKeyDown(KeyCode.RightArrow))
 		{
 			_day23.MoveTo(this, CurrentSpace.RightAdjacent);
+		}
+		else if (Input.GetKeyDown(KeyCode.R))
+		{
+			bool canRoomBeEntered = _day23.CanRoomBeEntered(AmphipodType);
+			Debug.Log("Can room be entered? " + canRoomBeEntered);
+			if (canRoomBeEntered)
+			{
+				Day23.Move routeToRoom = _day23.BuildRouteToRoom(this);
+				Debug.Log("-> Can build path to room? " + (routeToRoom != null));
+				if (routeToRoom != null)
+				{
+					Debug.Log("-> Steps to reach room: " + routeToRoom.Steps.Count);
+				}
+			}
+		}
+		else if (Input.GetKeyDown(KeyCode.H))
+		{
+			if (CurrentSpace.SpaceType == AmphipodSpaceType.Room)
+			{
+				List<Day23.Move> allMovesForAmphipod = _day23.BuildAllRoutesToHallway(this);
+				Debug.Log("Total valid moves to hallway: " + allMovesForAmphipod.Count);
+			}
+			else
+			{
+				Debug.Log("Already in the hallway.");
+			}
+		}
+		else if (Input.GetKeyDown(KeyCode.M))
+		{
+			List<Day23.Move> allPossibleMoves = _day23.GetPossibleMoves();
+			Debug.Log("ALL valid moves: " + allPossibleMoves.Count);
 		}
 	}
 

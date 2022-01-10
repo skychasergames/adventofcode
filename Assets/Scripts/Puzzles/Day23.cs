@@ -3,17 +3,10 @@ using System.IO;
 using NaughtyAttributes;
 using UnityEngine;
 using System.Linq;
+using System.Text;
 
 public class Day23 : PuzzleBase
 {
-	public enum AmphipodType
-	{
-		Amber,
-		Bronze,
-		Copper,
-		Desert
-	}
-	
 	public static readonly Dictionary<AmphipodType, int> EnergyByAmphipodColor = new Dictionary<AmphipodType, int>
 	{
 		{ AmphipodType.Amber, 1 },
@@ -24,78 +17,128 @@ public class Day23 : PuzzleBase
 
 	[SerializeField] private List<Amphipod> _amphipods = new List<Amphipod>();
 	[SerializeField] private List<AmphipodSpace> _spaces = new List<AmphipodSpace>();
+	[SerializeField] private List<Amphipod> _puzzle2AdditionalAmphipods = new List<Amphipod>();
+	[SerializeField] private List<AmphipodSpace> _puzzle2AdditionalSpaces = new List<AmphipodSpace>();
+	[SerializeField] private string _puzzle2AdditionalAmphipodTypes = "DCBADBAC";
 	
 	[SerializeField] private Color _graphicColorNormal = Color.white;
 	[SerializeField] private Color _graphicColorSelected = Color.yellow;
 	[SerializeField] private TMPro.TextMeshPro _energyUsedLabel = null;
 	
-	private Amphipod _currentAmphipod = null;
+	[SerializeField] private bool _enableAI = false;
+	
+	private List<Amphipod> _currentAmphipods = new List<Amphipod>();
+	private List<AmphipodSpace> _currentSpaces = new List<AmphipodSpace>();
+	private Amphipod _selectedAmphipod = null;
 	private int _totalEnergyUsed = 0;
 	
-	[Button("Clear Visualization")]
+	[Button]
 	private void ResetVisualization()
 	{
-		if (_currentAmphipod != null)
+		if (_selectedAmphipod != null)
 		{
-			_currentAmphipod.ToggleSelected(false, _graphicColorNormal);
+			_selectedAmphipod.ToggleSelected(false, _graphicColorNormal);
 		}
 
-		_currentAmphipod = null;
+		_selectedAmphipod = null;
 		_totalEnergyUsed = 0;
 		_energyUsedLabel.text = "Click an 'Execute Puzzle' button on Day23 to start";
 
-		foreach (Amphipod amphipod in _amphipods)
+		foreach (Amphipod amphipod in _amphipods.Union(_puzzle2AdditionalAmphipods))
 		{
 			amphipod.Uninitialize();
 		}
+		
+		_puzzle2AdditionalSpaces.ForEach(space => space.Initialize(null, true));
+	}
+
+	private void Awake()
+	{
+		ResetVisualization();
 	}
 
 	protected override void ExecutePuzzle1()
 	{
+		ExecutePuzzle(false);
+	}
+
+	private void ExecutePuzzle(bool isPuzzle2)
+	{
 		ResetVisualization();
 
-		string firstAmphipodRow = _inputDataLines[2];
-		string secondAmphipodRow = _inputDataLines[3];
-		char[] amphipodChars = firstAmphipodRow.Where(char.IsLetter).Concat(secondAmphipodRow.Where(char.IsLetter)).ToArray();
-		for (int a = 0; a < amphipodChars.Length; a++)
+		_puzzle2AdditionalAmphipods.ForEach(amphipod => amphipod.gameObject.SetActive(isPuzzle2));
+		_puzzle2AdditionalSpaces.ForEach(space => space.gameObject.SetActive(isPuzzle2));
+		
+		_currentAmphipods = _amphipods;
+		_currentSpaces = _spaces;
+		if (isPuzzle2)
 		{
-			AmphipodType amphipodType;
-			switch (amphipodChars[a])
-			{
-			case 'A': amphipodType = AmphipodType.Amber; break;
-			case 'B': amphipodType = AmphipodType.Bronze; break;
-			case 'C': amphipodType = AmphipodType.Copper; break;
-			case 'D': amphipodType = AmphipodType.Desert; break;
-			default:
-				throw new InvalidDataException("Invalid Amphipod Char: " + amphipodChars[a]);
-			}
-			
-			_amphipods[a].Initialize(this, amphipodType);
+			_currentAmphipods.AddRange(_puzzle2AdditionalAmphipods);
+			_currentSpaces.AddRange(_puzzle2AdditionalSpaces);
 		}
 
-		foreach (AmphipodSpace space in _spaces)
+		StringBuilder amphipodCharsBuilder = new StringBuilder();
+		foreach (char c in _inputDataLines[2].Where(char.IsLetter))
 		{
-			space.Initialize(_amphipods.Any(a => a.CurrentSpace == space));
+			amphipodCharsBuilder.Append(c);
 		}
+
+		if (isPuzzle2)
+		{
+			amphipodCharsBuilder.Append(_puzzle2AdditionalAmphipodTypes);
+		}
+		
+		foreach (char c in _inputDataLines[3].Where(char.IsLetter))
+		{
+			amphipodCharsBuilder.Append(c);
+		}
+
+		string amphipodChars = amphipodCharsBuilder.ToString();
+		for (int a = 0; a < amphipodChars.Length; a++)
+		{
+			var amphipodType = amphipodChars[a] switch
+			{
+				'A' => AmphipodType.Amber,
+				'B' => AmphipodType.Bronze,
+				'C' => AmphipodType.Copper,
+				'D' => AmphipodType.Desert,
+				_ => throw new InvalidDataException("Invalid Amphipod Char: " + amphipodChars[a])
+			};
+
+			_currentAmphipods[a].Initialize(this, amphipodType);
+		}
+
+		foreach (AmphipodSpace space in _currentSpaces)
+		{
+			Amphipod occupyingAmphipod = null;
+			if (_currentAmphipods.Any(a => a.CurrentSpace == space))
+			{
+				occupyingAmphipod = _currentAmphipods.First(a => a.CurrentSpace == space);
+			}
+
+			space.Initialize(occupyingAmphipod, false);
+		}
+
+		_energyUsedLabel.text = "Click an Amphipod and use arrow keys to move";
 	}
 
 	public void OnAmphipodClicked(Amphipod amphipod)
 	{
-		if (_currentAmphipod != null)
+		if (_selectedAmphipod != null)
 		{
-			_currentAmphipod.ToggleSelected(false, _graphicColorNormal);
+			_selectedAmphipod.ToggleSelected(false, _graphicColorNormal);
 		}
 
-		_currentAmphipod = amphipod;
-		_currentAmphipod.ToggleSelected(true, _graphicColorSelected);
+		_selectedAmphipod = amphipod;
+		_selectedAmphipod.ToggleSelected(true, _graphicColorSelected);
 	}
 
 	public void MoveTo(Amphipod amphipod, AmphipodSpace newSpace)
 	{
-		if (newSpace != null)
+		if (newSpace != null && newSpace.gameObject.activeInHierarchy && newSpace.IsFree)
 		{
 			amphipod.CurrentSpace.ClearSpace();
-			newSpace.OccupySpace();
+			newSpace.OccupySpace(amphipod);
 			amphipod.MoveToSpace(newSpace);
 
 			int energyUsed = EnergyByAmphipodColor[amphipod.AmphipodType];
@@ -104,8 +147,214 @@ public class Day23 : PuzzleBase
 		}
 	}
 
+	public class Move
+	{
+		public Amphipod Amphipod { get; }
+		public AmphipodSpace StartSpace { get; }
+		public List<AmphipodSpace> Steps { get; }
+
+		public Move(Amphipod amphipod, List<AmphipodSpace> steps)
+		{
+			Amphipod = amphipod;
+			StartSpace = amphipod.CurrentSpace;
+			Steps = steps;
+		}
+	}
+
+	public List<Move> GetPossibleMoves()
+	{
+		List<Move> possibleMoves = new List<Move>();
+		foreach (Amphipod amphipod in _currentAmphipods)
+		{
+			AmphipodSpace startSpace = amphipod.CurrentSpace;
+			if (startSpace.SpaceType == AmphipodSpaceType.Hallway)
+			{
+				// Have to move to Room (matching amphipod type)
+				if (CanRoomBeEntered(amphipod.AmphipodType))
+				{
+					Move routeToRoom = BuildRouteToRoom(amphipod);
+					if (routeToRoom != null)
+					{
+						possibleMoves.Add(routeToRoom);
+					}
+				}
+				
+			}
+			else if (startSpace.SpaceType == AmphipodSpaceType.Room && 
+			         (startSpace.RoomType != amphipod.AmphipodType || !CanRoomBeEntered(amphipod.AmphipodType)))
+			{
+				// Can move to Hallway...
+				possibleMoves.AddRange(BuildAllRoutesToHallway(amphipod));
+				
+				// ...or Room (matching amphipod type)
+				if (CanRoomBeEntered(amphipod.AmphipodType))
+				{
+					Move routeToRoom = BuildRouteToRoom(amphipod);
+					if (routeToRoom != null)
+					{
+						possibleMoves.Add(routeToRoom);
+					}
+				}
+			}
+		}
+
+		return possibleMoves;
+	}
+
+	public bool CanRoomBeEntered(AmphipodType roomType)
+	{
+		foreach (AmphipodSpace room in _currentSpaces.Where(space => space.SpaceType == AmphipodSpaceType.Room && space.RoomType == roomType))
+		{
+			if (room.OccupyingAmphipod != null && room.OccupyingAmphipod.AmphipodType != roomType)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public List<Move> BuildAllRoutesToHallway(Amphipod amphipod)
+	{
+		List<Move> allRoutesToHallway = new List<Move>();
+		
+		AmphipodType amphipodType = amphipod.AmphipodType;
+		AmphipodSpace currentSpace = amphipod.CurrentSpace;
+		Stack<AmphipodSpace> route = new Stack<AmphipodSpace>();
+		bool goLeft = true;
+		while (true)
+		{
+			// Start by moving up to a junction
+			AmphipodSpace up = currentSpace.UpAdjacent;
+			if (currentSpace.SpaceType == AmphipodSpaceType.Room &&
+			    (currentSpace.RoomType != amphipodType || !CanRoomBeEntered(amphipodType)))
+			{
+				if (up.IsFree)
+				{
+					route.Push(up);
+					currentSpace = up;
+					continue;
+				}
+				
+				// Path is blocked
+				return allRoutesToHallway;
+			}
+
+			// If in the hallway, move left or right until at a valid position to stop
+			if (goLeft)
+			{
+				AmphipodSpace left = currentSpace.LeftAdjacent;
+				if (left != null && left.IsFree)
+				{
+					route.Push(left);
+					if (left.SpaceType == AmphipodSpaceType.Hallway)
+					{
+						allRoutesToHallway.Add(new Move(amphipod, route.Reverse().ToList()));
+					}
+					
+					currentSpace = left;
+					continue;
+				}
+				
+				// Reached a dead end going left. Try going right instead.
+				currentSpace = amphipod.CurrentSpace;
+				route.Clear();
+				goLeft = false;
+			}
+			else
+			{
+				AmphipodSpace right = currentSpace.RightAdjacent;
+				if (right != null && right.IsFree)
+				{
+					route.Push(right);
+					if (right.SpaceType == AmphipodSpaceType.Hallway)
+					{
+						allRoutesToHallway.Add(new Move(amphipod, route.Reverse().ToList()));
+					}
+					
+					currentSpace = right;
+					continue;
+				}
+				
+				// Reached a dead end going right. Done!
+				return allRoutesToHallway;
+			}
+		}
+	}
+
+	public Move BuildRouteToRoom(Amphipod amphipod)
+	{
+		AmphipodType amphipodType = amphipod.AmphipodType;
+		AmphipodSpace currentSpace = amphipod.CurrentSpace;
+		Stack<AmphipodSpace> route = new Stack<AmphipodSpace>();
+		bool goLeft = true;
+		while (true)
+		{
+			// If above the valid room, move down into it
+			AmphipodSpace down = currentSpace.DownAdjacent;
+			if (down != null && down.SpaceType == AmphipodSpaceType.Room && down.RoomType == amphipodType)
+			{
+				if (down.IsFree)
+				{
+					// Move down
+					route.Push(down);
+					currentSpace = down;
+					continue;
+				}
+
+				// Stopped on a valid room tile
+				return new Move(amphipod, route.Reverse().ToList());
+			}
+			
+			// If starting in an invalid room, start by moving up to junction
+			AmphipodSpace up = currentSpace.UpAdjacent;
+			if (currentSpace.SpaceType == AmphipodSpaceType.Room && currentSpace.RoomType != amphipodType)
+			{
+				if (up.IsFree)
+				{
+					route.Push(up);
+					currentSpace = up;
+					continue;
+				}
+				
+				// Path is blocked
+				return null;
+			}
+
+			// If in the hallway, move left or right until above a valid room
+			if (goLeft)
+			{
+				AmphipodSpace left = currentSpace.LeftAdjacent;
+				if (left != null && left.IsFree)
+				{
+					route.Push(left);
+					currentSpace = left;
+					continue;
+				}
+				
+				// Reached a dead end going left. Try going right instead.
+				currentSpace = amphipod.CurrentSpace;
+				route.Clear();
+				goLeft = false;
+			}
+			else
+			{
+				AmphipodSpace right = currentSpace.RightAdjacent;
+				if (right != null && right.IsFree)
+				{
+					route.Push(right);
+					currentSpace = right;
+					continue;
+				}
+				
+				// Reached a dead end going right. Can't reach room.
+				return null;
+			}
+		}
+	}
+
 	protected override void ExecutePuzzle2()
 	{
-		
+		ExecutePuzzle(true);
 	}
 }
