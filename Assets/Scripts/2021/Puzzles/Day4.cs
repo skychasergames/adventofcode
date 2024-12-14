@@ -2,340 +2,343 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NaughtyAttributes;
-using UnityEngine;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
+using UnityEngine;
 
-public class Day4 : PuzzleBase
+namespace AoC2021
 {
-	[SerializeField] private IntGrid _bingoGridPrefab = null;
-	[SerializeField] private Transform _bingoGridParent = null;
-	[SerializeField] private int _bingoGridHeight = 5;
-	[SerializeField] private float _numberRevealInterval = 0.25f;
-	[SerializeField] private Color _highlightColorCell = Color.yellow;
-	[SerializeField] private Color _highlightColorBingo = Color.green;
-	[SerializeField] private Color _highlightColorSquidBingo = Color.cyan;
-	
-	private EditorCoroutine _playBingoCoroutine = null;
-	
-	protected override void ExecutePuzzle1()
+	public class Day4 : PuzzleBase
 	{
-		// Reset if necessary
-		ResetBoards();
+		[SerializeField] private IntGrid _bingoGridPrefab = null;
+		[SerializeField] private Transform _bingoGridParent = null;
+		[SerializeField] private int _bingoGridHeight = 5;
+		[SerializeField] private float _numberRevealInterval = 0.25f;
+		[SerializeField] private Color _highlightColorCell = Color.yellow;
+		[SerializeField] private Color _highlightColorBingo = Color.green;
+		[SerializeField] private Color _highlightColorSquidBingo = Color.cyan;
+	
+		private EditorCoroutine _playBingoCoroutine = null;
+	
+		protected override void ExecutePuzzle1()
+		{
+			// Reset if necessary
+			ResetBoards();
 		
-		// Parse numbers
-		int[] numbers = ParseIntArray(SplitString(_inputDataLines[0], ","));
+			// Parse numbers
+			int[] numbers = ParseIntArray(SplitString(_inputDataLines[0], ","));
 
-		// Parse bingo grids
-		List<IntGrid> grids = ParseBingoGridsFromData();
+			// Parse bingo grids
+			List<IntGrid> grids = ParseBingoGridsFromData();
 		
-		// Play bingo!
-		_playBingoCoroutine = EditorCoroutineUtility.StartCoroutine(PlayBingo(numbers, grids), this);
-	}
+			// Play bingo!
+			_playBingoCoroutine = EditorCoroutineUtility.StartCoroutine(PlayBingo(numbers, grids), this);
+		}
 	
-	[Button("Reset Boards")]
-	private void ResetBoards()
-	{
-		if (_playBingoCoroutine != null)
+		[Button("Reset Boards")]
+		private void ResetBoards()
 		{
-			EditorCoroutineUtility.StopCoroutine(_playBingoCoroutine);
-		}
-		
-		while (_bingoGridParent.childCount > 0)
-		{
-			DestroyImmediate(_bingoGridParent.GetChild(0).gameObject);
-		}
-	}
-
-	private List<IntGrid> ParseBingoGridsFromData()
-	{
-		List<IntGrid> grids = new List<IntGrid>();
-		for (int rootRow = 1; rootRow < _inputDataLines.Length; rootRow += _bingoGridHeight)
-		{
-			IntGrid grid = Instantiate(_bingoGridPrefab, _bingoGridParent);
-			grid.name = "Bingo Grid " + (grids.Count + 1);
-			List<string> gridData = new List<string>();
-			
-			for (int subRow = 0; subRow < _bingoGridHeight; subRow++)
+			if (_playBingoCoroutine != null)
 			{
-				string line = _inputDataLines[rootRow + subRow];
-				gridData.Add(line);
+				EditorCoroutineUtility.StopCoroutine(_playBingoCoroutine);
 			}
-			
-			grid.Initialize(gridData.ToArray(), " ");
-			grids.Add(grid);
+		
+			while (_bingoGridParent.childCount > 0)
+			{
+				DestroyImmediate(_bingoGridParent.GetChild(0).gameObject);
+			}
 		}
 
-		return grids;
-	}
-
-	private IEnumerator PlayBingo(int[] numbers, List<IntGrid> grids)
-	{
-		IntGrid winningGrid = null;
-		int bingoColumn = -1;
-		int bingoRow = -1;
-		int finalNumber = -1;
-		EditorWaitForSeconds interval = new EditorWaitForSeconds(_numberRevealInterval);
-		
-		// Initialize state data
-		Dictionary<IntGrid, bool[,]> cellStatesPerGrid = grids.ToDictionary(grid => grid, grid => new bool[grid.columns,grid.rows]);
-		
-		// Call one number at a time, marking it off on every board
-		foreach (int number in numbers)
+		private List<IntGrid> ParseBingoGridsFromData()
 		{
-			foreach (IntGrid grid in grids)
+			List<IntGrid> grids = new List<IntGrid>();
+			for (int rootRow = 1; rootRow < _inputDataLines.Length; rootRow += _bingoGridHeight)
 			{
-				// Mark off number
-				for (int row = 0; row < grid.rows; row++)
+				IntGrid grid = Instantiate(_bingoGridPrefab, _bingoGridParent);
+				grid.name = "Bingo Grid " + (grids.Count + 1);
+				List<string> gridData = new List<string>();
+			
+				for (int subRow = 0; subRow < _bingoGridHeight; subRow++)
 				{
-					for (int column = 0; column < grid.columns; column++)
+					string line = _inputDataLines[rootRow + subRow];
+					gridData.Add(line);
+				}
+			
+				grid.Initialize(gridData.ToArray(), " ");
+				grids.Add(grid);
+			}
+
+			return grids;
+		}
+
+		private IEnumerator PlayBingo(int[] numbers, List<IntGrid> grids)
+		{
+			IntGrid winningGrid = null;
+			int bingoColumn = -1;
+			int bingoRow = -1;
+			int finalNumber = -1;
+			EditorWaitForSeconds interval = new EditorWaitForSeconds(_numberRevealInterval);
+		
+			// Initialize state data
+			Dictionary<IntGrid, bool[,]> cellStatesPerGrid = grids.ToDictionary(grid => grid, grid => new bool[grid.columns,grid.rows]);
+		
+			// Call one number at a time, marking it off on every board
+			foreach (int number in numbers)
+			{
+				foreach (IntGrid grid in grids)
+				{
+					// Mark off number
+					for (int row = 0; row < grid.rows; row++)
 					{
-						if (grid.cells[column, row] == number)
+						for (int column = 0; column < grid.columns; column++)
 						{
-							cellStatesPerGrid[grid][column, row] = true;
-							grid.HighlightCellView(column, row, _highlightColorCell);
+							if (grid.cells[column, row] == number)
+							{
+								cellStatesPerGrid[grid][column, row] = true;
+								grid.HighlightCellView(column, row, _highlightColorCell);
 							
-							EditorApplication.QueuePlayerLoopUpdate();
+								EditorApplication.QueuePlayerLoopUpdate();
+							}
 						}
+					}
+
+					// Check for bingo
+					if (CheckGridForBingo(grid, cellStatesPerGrid[grid], out bingoColumn, out bingoRow))
+					{
+						// We have a winner!
+						winningGrid = grid;
+						finalNumber = number;
+						break;
 					}
 				}
 
-				// Check for bingo
-				if (CheckGridForBingo(grid, cellStatesPerGrid[grid], out bingoColumn, out bingoRow))
+				if (winningGrid != null)
 				{
-					// We have a winner!
-					winningGrid = grid;
-					finalNumber = number;
 					break;
 				}
+
+				yield return interval;
 			}
 
 			if (winningGrid != null)
 			{
-				break;
-			}
-
-			yield return interval;
-		}
-
-		if (winningGrid != null)
-		{
-			LogResult("That's a bingo!", winningGrid);
+				LogResult("That's a bingo!", winningGrid);
 			
-			// Highlight bingo column/row green
-			if (bingoColumn >= 0)
-			{
-				winningGrid.HighlightColumn(bingoColumn, _highlightColorBingo);
-			}
-			else if (bingoRow >= 0)
-			{
-				winningGrid.HighlightRow(bingoRow, _highlightColorBingo);
+				// Highlight bingo column/row green
+				if (bingoColumn >= 0)
+				{
+					winningGrid.HighlightColumn(bingoColumn, _highlightColorBingo);
+				}
+				else if (bingoRow >= 0)
+				{
+					winningGrid.HighlightRow(bingoRow, _highlightColorBingo);
+				}
+				else
+				{
+					LogError("No valid bingo column or row");
+				}
+
+				// Calculate the final score
+				// Score = (sum of all unmarked numbers) * last number called
+				int finalScore = SumOfUnmarkedCells(winningGrid, cellStatesPerGrid[winningGrid]) * finalNumber;
+				LogResult("Winning board score", finalScore);
 			}
 			else
 			{
-				LogError("No valid bingo column or row");
+				LogError("No boards got bingo!?");
 			}
 
-			// Calculate the final score
-			// Score = (sum of all unmarked numbers) * last number called
-			int finalScore = SumOfUnmarkedCells(winningGrid, cellStatesPerGrid[winningGrid]) * finalNumber;
-			LogResult("Winning board score", finalScore);
+			_playBingoCoroutine = null;
 		}
-		else
+
+		private bool CheckGridForBingo(IntGrid grid, bool[,] cellStates, out int bingoColumn, out int bingoRow)
 		{
-			LogError("No boards got bingo!?");
-		}
-
-		_playBingoCoroutine = null;
-	}
-
-	private bool CheckGridForBingo(IntGrid grid, bool[,] cellStates, out int bingoColumn, out int bingoRow)
-	{
-		bingoColumn = -1;
-		bingoRow = -1;
+			bingoColumn = -1;
+			bingoRow = -1;
 		
-		for (int row = 0; row < grid.rows; row++)
-		{
-			if (IsRowBingo())
+			for (int row = 0; row < grid.rows; row++)
 			{
-				bingoRow = row;
-				return true;
-			}
+				if (IsRowBingo())
+				{
+					bingoRow = row;
+					return true;
+				}
 					
-			bool IsRowBingo()
+				bool IsRowBingo()
+				{
+					for (int column = 0; column < grid.columns; column++)
+					{
+						if (!cellStates[column, row])
+						{
+							return false;
+						}
+					}
+
+					return true;
+				}
+			}
+
+			for (int column = 0; column < grid.rows; column++)
+			{
+				if (IsColumnBingo())
+				{
+					bingoColumn = column;
+					return true;
+				}
+					
+				bool IsColumnBingo()
+				{
+					for (int row = 0; row < grid.rows; row++)
+					{
+						if (!cellStates[column, row])
+						{
+							return false;
+						}
+					}
+
+					return true;
+				}
+			}
+
+			return false;
+		}
+	
+		private int SumOfUnmarkedCells(IntGrid grid, bool[,] cellStates)
+		{
+			int sum = 0;
+			for (int row = 0; row < grid.rows; row++)
 			{
 				for (int column = 0; column < grid.columns; column++)
 				{
 					if (!cellStates[column, row])
 					{
-						return false;
+						sum += grid.cells[column, row];
 					}
 				}
-
-				return true;
 			}
+		
+			return sum;
 		}
 
-		for (int column = 0; column < grid.rows; column++)
+		protected override void ExecutePuzzle2()
 		{
-			if (IsColumnBingo())
-			{
-				bingoColumn = column;
-				return true;
-			}
-					
-			bool IsColumnBingo()
-			{
-				for (int row = 0; row < grid.rows; row++)
-				{
-					if (!cellStates[column, row])
-					{
-						return false;
-					}
-				}
+			// Reset if necessary
+			ResetBoards();
+		
+			// Parse numbers
+			int[] numbers = ParseIntArray(SplitString(_inputDataLines[0], ","));
 
-				return true;
-			}
+			// Parse bingo grids
+			List<IntGrid> grids = ParseBingoGridsFromData();
+		
+			// Play bingo!
+			_playBingoCoroutine = EditorCoroutineUtility.StartCoroutine(PlayBingoToLose(numbers, grids), this);
 		}
-
-		return false;
-	}
 	
-	private int SumOfUnmarkedCells(IntGrid grid, bool[,] cellStates)
-	{
-		int sum = 0;
-		for (int row = 0; row < grid.rows; row++)
+		private IEnumerator PlayBingoToLose(int[] numbers, List<IntGrid> grids)
 		{
-			for (int column = 0; column < grid.columns; column++)
+			IntGrid losingGrid = null;
+			int lastBingoColumn = -1;
+			int lastBingoRow = -1;
+			int finalNumber = -1;
+			EditorWaitForSeconds interval = new EditorWaitForSeconds(_numberRevealInterval);
+		
+			// Initialize state data
+			Dictionary<IntGrid, bool[,]> cellStatesPerGrid = grids.ToDictionary(grid => grid, grid => new bool[grid.columns,grid.rows]);
+		
+			// Call one number at a time, marking it off on every board
+			foreach (int number in numbers)
 			{
-				if (!cellStates[column, row])
+				foreach (IntGrid grid in grids)
 				{
-					sum += grid.cells[column, row];
-				}
-			}
-		}
-		
-		return sum;
-	}
-
-	protected override void ExecutePuzzle2()
-	{
-		// Reset if necessary
-		ResetBoards();
-		
-		// Parse numbers
-		int[] numbers = ParseIntArray(SplitString(_inputDataLines[0], ","));
-
-		// Parse bingo grids
-		List<IntGrid> grids = ParseBingoGridsFromData();
-		
-		// Play bingo!
-		_playBingoCoroutine = EditorCoroutineUtility.StartCoroutine(PlayBingoToLose(numbers, grids), this);
-	}
-	
-	private IEnumerator PlayBingoToLose(int[] numbers, List<IntGrid> grids)
-	{
-		IntGrid losingGrid = null;
-		int lastBingoColumn = -1;
-		int lastBingoRow = -1;
-		int finalNumber = -1;
-		EditorWaitForSeconds interval = new EditorWaitForSeconds(_numberRevealInterval);
-		
-		// Initialize state data
-		Dictionary<IntGrid, bool[,]> cellStatesPerGrid = grids.ToDictionary(grid => grid, grid => new bool[grid.columns,grid.rows]);
-		
-		// Call one number at a time, marking it off on every board
-		foreach (int number in numbers)
-		{
-			foreach (IntGrid grid in grids)
-			{
-				// Mark off number
-				for (int row = 0; row < grid.rows; row++)
-				{
-					for (int column = 0; column < grid.columns; column++)
+					// Mark off number
+					for (int row = 0; row < grid.rows; row++)
 					{
-						if (grid.cells[column, row] == number)
+						for (int column = 0; column < grid.columns; column++)
 						{
-							cellStatesPerGrid[grid][column, row] = true;
-							grid.HighlightCellView(column, row, _highlightColorCell);
+							if (grid.cells[column, row] == number)
+							{
+								cellStatesPerGrid[grid][column, row] = true;
+								grid.HighlightCellView(column, row, _highlightColorCell);
 
-							EditorApplication.QueuePlayerLoopUpdate();
+								EditorApplication.QueuePlayerLoopUpdate();
+							}
 						}
 					}
 				}
-			}
 
-			// Check each board for bingo. If it's a bingo, give it to the giant squid (discard).
-			for (int i = grids.Count - 1; i >= 0; i--)
-			{
-				IntGrid grid = grids[i];
-				if (CheckGridForBingo(grid, cellStatesPerGrid[grid], out lastBingoColumn, out lastBingoRow))
+				// Check each board for bingo. If it's a bingo, give it to the giant squid (discard).
+				for (int i = grids.Count - 1; i >= 0; i--)
 				{
-					// We have a winner! ... which we don't want.
-					if (grids.Count == 1)
+					IntGrid grid = grids[i];
+					if (CheckGridForBingo(grid, cellStatesPerGrid[grid], out lastBingoColumn, out lastBingoRow))
 					{
-						// Hold up, this is the last board - we've done it! We're gonna lose!
-						losingGrid = grid;
-						finalNumber = number;
-					}
-					else
-					{
-						grids.Remove(grid);
-						cellStatesPerGrid.Remove(grid);
-						
-						// Highlight bingo column/row blue
-						if (lastBingoColumn >= 0)
+						// We have a winner! ... which we don't want.
+						if (grids.Count == 1)
 						{
-							grid.HighlightColumn(lastBingoColumn, _highlightColorSquidBingo);
-						}
-						else if (lastBingoRow >= 0)
-						{
-							grid.HighlightRow(lastBingoRow, _highlightColorSquidBingo);
+							// Hold up, this is the last board - we've done it! We're gonna lose!
+							losingGrid = grid;
+							finalNumber = number;
 						}
 						else
 						{
-							LogError("No valid bingo column or row");
-						}
-					} 
+							grids.Remove(grid);
+							cellStatesPerGrid.Remove(grid);
+						
+							// Highlight bingo column/row blue
+							if (lastBingoColumn >= 0)
+							{
+								grid.HighlightColumn(lastBingoColumn, _highlightColorSquidBingo);
+							}
+							else if (lastBingoRow >= 0)
+							{
+								grid.HighlightRow(lastBingoRow, _highlightColorSquidBingo);
+							}
+							else
+							{
+								LogError("No valid bingo column or row");
+							}
+						} 
+					}
 				}
+
+				if (losingGrid != null)
+				{
+					break;
+				}
+
+				yield return interval;
 			}
 
 			if (losingGrid != null)
 			{
-				break;
-			}
-
-			yield return interval;
-		}
-
-		if (losingGrid != null)
-		{
-			LogResult("And the Participation Medal goes to", losingGrid);
+				LogResult("And the Participation Medal goes to", losingGrid);
 			
-			// Highlight bingo column/row green
-			if (lastBingoColumn >= 0)
-			{
-				losingGrid.HighlightColumn(lastBingoColumn, _highlightColorBingo);
-			}
-			else if (lastBingoRow >= 0)
-			{
-				losingGrid.HighlightRow(lastBingoRow, _highlightColorBingo);
+				// Highlight bingo column/row green
+				if (lastBingoColumn >= 0)
+				{
+					losingGrid.HighlightColumn(lastBingoColumn, _highlightColorBingo);
+				}
+				else if (lastBingoRow >= 0)
+				{
+					losingGrid.HighlightRow(lastBingoRow, _highlightColorBingo);
+				}
+				else
+				{
+					LogError("No valid bingo column or row");
+				}
+
+				// Calculate the final score
+				// Score = (sum of all unmarked numbers) * last number called
+				int finalScore = SumOfUnmarkedCells(losingGrid, cellStatesPerGrid[losingGrid]) * finalNumber;
+				LogResult("Winning board score", finalScore);
 			}
 			else
 			{
-				LogError("No valid bingo column or row");
+				LogError("No boards got bingo!?");
 			}
 
-			// Calculate the final score
-			// Score = (sum of all unmarked numbers) * last number called
-			int finalScore = SumOfUnmarkedCells(losingGrid, cellStatesPerGrid[losingGrid]) * finalNumber;
-			LogResult("Winning board score", finalScore);
+			_playBingoCoroutine = null;
 		}
-		else
-		{
-			LogError("No boards got bingo!?");
-		}
-
-		_playBingoCoroutine = null;
 	}
 }

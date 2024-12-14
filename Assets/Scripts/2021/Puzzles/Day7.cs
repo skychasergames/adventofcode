@@ -1,60 +1,62 @@
-using System.Collections.Generic;
 using UnityEngine;
 
-public class Day7 : PuzzleBase
+namespace AoC2021
 {
-	protected override void ExecutePuzzle1()
+	public class Day7 : PuzzleBase
 	{
-		int lowestFuelCost = int.MaxValue;
-		int bestPosition = -1;
-		int[] crabPositions = ParseIntArray(SplitString(_inputDataLines[0], ","));
-		for (int checkPosition = Mathf.Min(crabPositions); checkPosition < Mathf.Max(crabPositions); checkPosition++)
+		protected override void ExecutePuzzle1()
 		{
-			int totalFuelCost = 0;
-			foreach (int crabPosition in crabPositions)
+			int lowestFuelCost = int.MaxValue;
+			int bestPosition = -1;
+			int[] crabPositions = ParseIntArray(SplitString(_inputDataLines[0], ","));
+			for (int checkPosition = Mathf.Min(crabPositions); checkPosition < Mathf.Max(crabPositions); checkPosition++)
 			{
-				totalFuelCost += Mathf.Abs(crabPosition - checkPosition);
-			}
-
-			if (totalFuelCost < lowestFuelCost)
-			{
-				lowestFuelCost = totalFuelCost;
-				bestPosition = checkPosition;
-			}
-		}
-
-		LogResult("Best position", bestPosition);
-		LogResult("Total fuel cost", lowestFuelCost);
-	}
-
-	protected override void ExecutePuzzle2()
-	{
-		int lowestFuelCost = int.MaxValue;
-		int bestPosition = -1;
-		int[] crabPositions = ParseIntArray(SplitString(_inputDataLines[0], ","));
-		for (int checkPosition = Mathf.Min(crabPositions); checkPosition < Mathf.Max(crabPositions); checkPosition++)
-		{
-			int totalFuelCost = 0;
-			foreach (int crabPosition in crabPositions)
-			{
-				int distance = Mathf.Abs(crabPosition - checkPosition);
-				int fuelCost = 0;
-				for (int d = 1; d <= distance; d++)
+				int totalFuelCost = 0;
+				foreach (int crabPosition in crabPositions)
 				{
-					fuelCost += d;
+					totalFuelCost += Mathf.Abs(crabPosition - checkPosition);
 				}
-				
-				totalFuelCost += fuelCost;
+
+				if (totalFuelCost < lowestFuelCost)
+				{
+					lowestFuelCost = totalFuelCost;
+					bestPosition = checkPosition;
+				}
 			}
 
-			if (totalFuelCost < lowestFuelCost)
-			{
-				lowestFuelCost = totalFuelCost;
-				bestPosition = checkPosition;
-			}
+			LogResult("Best position", bestPosition);
+			LogResult("Total fuel cost", lowestFuelCost);
 		}
 
-		LogResult("Best position", bestPosition);
-		LogResult("Total fuel cost", lowestFuelCost);
+		protected override void ExecutePuzzle2()
+		{
+			int lowestFuelCost = int.MaxValue;
+			int bestPosition = -1;
+			int[] crabPositions = ParseIntArray(SplitString(_inputDataLines[0], ","));
+			for (int checkPosition = Mathf.Min(crabPositions); checkPosition < Mathf.Max(crabPositions); checkPosition++)
+			{
+				int totalFuelCost = 0;
+				foreach (int crabPosition in crabPositions)
+				{
+					int distance = Mathf.Abs(crabPosition - checkPosition);
+					int fuelCost = 0;
+					for (int d = 1; d <= distance; d++)
+					{
+						fuelCost += d;
+					}
+				
+					totalFuelCost += fuelCost;
+				}
+
+				if (totalFuelCost < lowestFuelCost)
+				{
+					lowestFuelCost = totalFuelCost;
+					bestPosition = checkPosition;
+				}
+			}
+
+			LogResult("Best position", bestPosition);
+			LogResult("Total fuel cost", lowestFuelCost);
+		}
 	}
 }
