@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using NaughtyAttributes;
 using UnityEngine;
 
@@ -30,6 +28,8 @@ public class AmphipodSpace : MonoBehaviour
 
 	public Amphipod OccupyingAmphipod { get; private set; }
 	public bool IsFree { get; private set; }
+
+	public int X => Mathf.RoundToInt(transform.position.x);
 
 	public void Initialize(Amphipod occupyingAmphipod, bool lockSpace)
 	{

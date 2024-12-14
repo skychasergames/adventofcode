@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -29,7 +27,8 @@ public class Amphipod : MonoBehaviour, IPointerClickHandler
 
 	public AmphipodType AmphipodType { get; private set; }
 	public AmphipodState CurrentState { get; private set; } = AmphipodState.Uninitialized;
-	public AmphipodSpace CurrentSpace { get; private set; }
+	public AmphipodSpace CurrentSpace { get; private set; } = null;
+	public int X => CurrentSpace.X;
 
 	private void Reset()
 	{
@@ -38,6 +37,7 @@ public class Amphipod : MonoBehaviour, IPointerClickHandler
 
 	public void Uninitialize()
 	{
+		MoveToSpace(_startingSpace);
 		CurrentState = AmphipodState.Uninitialized;
 		_amphipodTypeLabel.text = "?";
 	}
@@ -46,9 +46,9 @@ public class Amphipod : MonoBehaviour, IPointerClickHandler
 	{
 		_day23 = day23;
 		AmphipodType = amphipodType;
-		_amphipodTypeLabel.text = amphipodType.ToString().Substring(0, 1);
-		CurrentState = AmphipodState.Unselected;
 		MoveToSpace(_startingSpace);
+		CurrentState = AmphipodState.Unselected;
+		_amphipodTypeLabel.text = amphipodType.ToString().Substring(0, 1);
 	}
 
 	private void Update()
@@ -102,7 +102,7 @@ public class Amphipod : MonoBehaviour, IPointerClickHandler
 		}
 		else if (Input.GetKeyDown(KeyCode.M))
 		{
-			List<Day23.Move> allPossibleMoves = _day23.GetPossibleMoves();
+			List<Day23.Move> allPossibleMoves = _day23.GetAllPossibleMoves();
 			Debug.Log("ALL valid moves: " + allPossibleMoves.Count);
 		}
 	}

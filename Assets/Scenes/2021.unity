@@ -438,7 +438,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8609627340630657633, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: _startingSpace
@@ -450,11 +450,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -682,6 +682,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_2
@@ -696,11 +704,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1
+      value: -3
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -759,13 +767,21 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_12
       objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8609627340630657633, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: _startingSpace
@@ -835,7 +851,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8609627340630657633, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: _startingSpace
@@ -1168,7 +1184,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Click an Amphipod and use arrow keys to move
+  m_text: AI starting...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1195,7 +1211,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 5.15
+  m_fontSize: 8.05
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1476,7 +1492,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8609627340630657633, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: _startingSpace
@@ -1599,7 +1615,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8609627340630657633, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: _startingSpace
@@ -2029,6 +2045,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_6
@@ -2043,7 +2067,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -2106,13 +2130,21 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_9
       objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8609627340630657633, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: _startingSpace
@@ -2184,7 +2216,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &734400852
 Transform:
   m_ObjectHideFlags: 0
@@ -2277,7 +2309,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1613176007095566286, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6984381716195190571, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_RootOrder
@@ -2539,7 +2571,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8609627340630657633, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: _startingSpace
@@ -2551,11 +2583,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -4
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3072,6 +3104,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_3
@@ -3086,11 +3126,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7
+      value: 11
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3648,7 +3688,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1613176007095566286, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6984381716195190571, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_RootOrder
@@ -3802,6 +3842,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_7
@@ -3816,11 +3864,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -4226,7 +4274,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1613176007095566286, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6984381716195190571, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_RootOrder
@@ -4297,6 +4345,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_8
@@ -4475,7 +4531,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1613176007095566286, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6984381716195190571, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_RootOrder
@@ -4651,6 +4707,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_5
@@ -4665,11 +4729,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -5483,7 +5547,12 @@ MonoBehaviour:
   _graphicColorNormal: {r: 1, g: 1, b: 1, a: 1}
   _graphicColorSelected: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   _energyUsedLabel: {fileID: 375006938}
-  _enableAI: 0
+  _enableAI: 1
+  _AIStepInterval: 0
+  _AIMoveInterval: 0
+  _AIEnergyBands: 1000
+  _AICorrectRoomFitness: 100
+  _AIEmptyRoomFitness: 100
 --- !u!4 &1484160772
 Transform:
   m_ObjectHideFlags: 0
@@ -5703,7 +5772,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1613176007095566286, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6984381716195190571, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_RootOrder
@@ -5897,7 +5966,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1613176007095566286, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6984381716195190571, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_RootOrder
@@ -6272,7 +6341,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1613176007095566286, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6984381716195190571, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_RootOrder
@@ -6524,6 +6593,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_4
@@ -7778,7 +7855,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8609627340630657633, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: _startingSpace
@@ -7790,11 +7867,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 7
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.z
@@ -7979,7 +8056,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1613176007095566286, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6984381716195190571, guid: b628ce8e400ccc74cb28627bd7fccdf7, type: 3}
       propertyPath: m_RootOrder
@@ -8247,6 +8324,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 231879969}
     m_Modifications:
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6990438692710206337, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8413325706594161889, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_Name
       value: Amphipod_1
@@ -8261,11 +8346,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 3
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8613566234661050375, guid: 591f15f33459fa2418bf9ce6093d753a, type: 3}
       propertyPath: m_LocalPosition.z

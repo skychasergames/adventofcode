@@ -264,7 +264,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8613566234661050375}
   - component: {fileID: 8609627340630657633}
-  - component: {fileID: 2301680994749947609}
+  - component: {fileID: 9089398910573955741}
   m_Layer: 0
   m_Name: Day23_Amphipod
   m_TagString: Untagged
@@ -303,7 +303,7 @@ MonoBehaviour:
   _graphic: {fileID: 6990438692710206337}
   _amphipodTypeLabel: {fileID: 8808303965711956448}
   _startingSpace: {fileID: 0}
---- !u!58 &2301680994749947609
+--- !u!58 &9089398910573955741
 CircleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
