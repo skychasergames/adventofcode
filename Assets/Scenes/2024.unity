@@ -379,3 +379,48 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _exampleData: {fileID: 4900000, guid: d01b56304e993534391f68f432897b41, type: 3}
   _puzzleData: {fileID: 4900000, guid: 46b1b87279f1bf9449f2c410ab2728b1, type: 3}
+--- !u!1 &2048770548
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2048770550}
+  - component: {fileID: 2048770549}
+  m_Layer: 0
+  m_Name: Day3
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2048770549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2048770548}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54abdbec0ae4d52499049d43b3a4e556, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _exampleData: {fileID: 4900000, guid: 8fd0fc745361da641b832f838da5b307, type: 3}
+  _puzzleData: {fileID: 4900000, guid: 724964e858b1c6a44b2c66f371d2b60c, type: 3}
+--- !u!4 &2048770550
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2048770548}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
