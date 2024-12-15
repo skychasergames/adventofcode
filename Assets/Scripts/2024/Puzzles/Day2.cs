@@ -25,7 +25,20 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
-			
+			List<int[]> reports = GetReports();
+			int numSafeReports = 0;
+			for (int i = 0; i < reports.Count; i++)
+			{
+				bool isReportSafe = IsReportSafeUsingProblemDampener(reports[i]);
+				if (isReportSafe)
+				{
+					numSafeReports++;
+				}
+				
+				LogResult("Report " + i, isReportSafe ? "Safe" : "Unsafe");
+			}
+
+			LogResult("Total safe reports", numSafeReports);
 		}
 
 		private List<int[]> GetReports()
@@ -38,13 +51,13 @@ namespace AoC2024
 			return reports;
 		}
 
-		private bool IsReportSafe(int[] report)
+		private bool IsReportSafe(IList<int> report)
 		{
 			// Determine if report levels are increasing or decreasing
 			bool isIncreasing = report[0] < report[1];
 			
 			// Iterate over levels
-			for (int i = 0; i < report.Length - 1; i++)
+			for (int i = 0; i < report.Count - 1; i++)
 			{
 				// Ensure increasing/decreasing trend is followed
 				if ((isIncreasing && report[i] >= report[i+1]) ||
@@ -61,6 +74,26 @@ namespace AoC2024
 			}
 
 			return true;
+		}
+
+		private bool IsReportSafeUsingProblemDampener(int[] report)
+		{
+			if (IsReportSafe(report))
+			{
+				return true;
+			}
+
+			for (int badLevel = 0; badLevel < report.Length; badLevel++)
+			{
+				List<int> dampenedReport = new List<int>(report);
+				dampenedReport.RemoveAt(badLevel);
+				if (IsReportSafe(dampenedReport))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }
