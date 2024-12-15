@@ -26,7 +26,18 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
-			
+			GetLocationLists(out List<int> leftList, out List<int> rightList);
+
+			int[] similarityScores = new int[leftList.Count];
+
+			for (int i = 0; i < leftList.Count; i++)
+			{
+				similarityScores[i] = leftList[i] * rightList.Count(id => id == leftList[i]);
+				LogResult("Similarity score " + i, similarityScores[i]);
+			}
+
+			int sum = similarityScores.Sum();
+			LogResult("Total similarity score", sum);
 		}
 
 		private void GetLocationLists(out List<int> leftList, out List<int> rightList)
