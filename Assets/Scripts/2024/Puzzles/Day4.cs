@@ -46,7 +46,19 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
+			_grid.Initialize(_inputDataLines);
+
+			const string word = "MAS";
+			int totalXMases = 0;
+			for (int y = 1; y < _grid.rows - 1; y++)
+			{
+				for (int x = 1; x < _grid.columns - 1; x++)
+				{
+					totalXMases += HighlightWordCrossAtCell(word, x, y);
+				}
+			}
 			
+			LogResult("Total X-MASes found", totalXMases);
 		}
 
 		/// Highlights any occurrences of the word starting at the given coordinates.
@@ -89,6 +101,32 @@ namespace AoC2024
 			{
 				_grid.HighlightCellView(startX + directionX * i, startY + directionY * i, _highlightColor);
 			}
+		}
+
+		private int HighlightWordCrossAtCell(string word, int x, int y)
+		{
+			if (_grid.GetCellValue(x, y) == word[1])
+			{
+				char topLeft = _grid.GetCellValue(x - 1, y - 1);
+				char topRight = _grid.GetCellValue(x + 1, y - 1);
+				char bottomLeft = _grid.GetCellValue(x - 1, y + 1);
+				char bottomRight = _grid.GetCellValue(x + 1, y + 1);
+				if (((topLeft == word[0] && bottomRight == word[2]) ||
+				     (topLeft == word[2] && bottomRight == word[0])) &&
+					((topRight == word[0] && bottomLeft == word[2]) ||
+					 (topRight == word[2] && bottomLeft == word[0])
+					))
+				{
+					_grid.HighlightCellView(x, y, _highlightColor);
+					_grid.HighlightCellView(x - 1, y - 1, _highlightColor);
+					_grid.HighlightCellView(x + 1, y - 1, _highlightColor);
+					_grid.HighlightCellView(x - 1, y + 1, _highlightColor);
+					_grid.HighlightCellView(x + 1, y + 1, _highlightColor);
+					return 1;
+				}
+			}
+
+			return 0;
 		}
 	}
 }
