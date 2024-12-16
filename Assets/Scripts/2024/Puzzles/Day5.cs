@@ -33,7 +33,26 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
+			BuildPageRuleset();
+
+			int sumOfMiddleNumbers = 0;
 			
+			string[] updateData = _inputDataLines.Where(line => line.Contains(',')).ToArray();
+			foreach (string updateString in updateData)
+			{
+				int[] updatePages = ParseIntArray(SplitString(updateString, ","));
+				bool isUpdateInCorrectOrder = IsUpdateInCorrectOrder(updatePages);
+				
+				if (!isUpdateInCorrectOrder)
+				{
+					int[] reorderedPages = ReorderUpdate(updatePages);
+					LogResult(updateString + " reordered", string.Join(",", reorderedPages));
+					
+					sumOfMiddleNumbers += reorderedPages[Mathf.FloorToInt(reorderedPages.Length / 2f)];
+				}
+			}
+
+			LogResult("Sum of middle numbers", sumOfMiddleNumbers);
 		}
 
 		private class PageRules
@@ -91,6 +110,25 @@ namespace AoC2024
 			}
 
 			return true;
+		}
+
+		private int[] ReorderUpdate(int[] incorrectlyOrderedPages)
+		{
+			List<int> reorderedPages = new List<int>();
+			foreach (int thisPageNumber in incorrectlyOrderedPages)
+			{
+				if (_pageRuleset.TryGetValue(thisPageNumber, out PageRules thisPage))
+				{
+					int newIndex = reorderedPages.FindLastIndex(otherPage => thisPage.mustComeAfterPages.Contains(otherPage));
+					reorderedPages.Insert(newIndex + 1, thisPageNumber);
+				}
+				else
+				{
+					reorderedPages.Add(thisPageNumber);
+				}
+			}
+
+			return reorderedPages.ToArray();
 		}
 	}
 }
