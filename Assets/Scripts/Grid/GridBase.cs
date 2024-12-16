@@ -213,6 +213,11 @@ public abstract class GridBase<TValue, TCellCollection, TCellViewCollection> : M
 	#endregion
 
 	#region Cell Data & Views
+	public bool CellExists(int column, int row)
+	{
+		return column >= 0 && column < columns && row >= 0 && row < rows;
+	}
+	
 	public TValue GetCellValue(int column, int row)
 	{
 		return cells[column, row];
