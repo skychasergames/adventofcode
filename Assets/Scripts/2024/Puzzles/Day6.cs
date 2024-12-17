@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -13,9 +12,9 @@ namespace AoC2024
 	{
 		[SerializeField] private BoolGrid _map = null;
 		[SerializeField] private TextMeshProUGUI _guard = null;
-		[SerializeField] private float _intervalExample = 0.25f;
-		[SerializeField] private float _intervalPuzzle = 0.01f;
-		[SerializeField] private int _intervalSkipPuzzle = 10;
+		[SerializeField] private float _moveIntervalExample = 0.25f;
+		[SerializeField] private float _moveIntervalPuzzle = 0.01f;
+		[SerializeField] private int _moveIntervalSkipPuzzle = 100;
 		
 		[SerializeField] private Color _blockedPositionHighlight = Color.black;
 		[SerializeField] private Color _visitedPositionHighlight = Color.yellow;
@@ -23,6 +22,8 @@ namespace AoC2024
 		private Vector2Int _guardPosition = new Vector2Int();
 		private Direction _guardDirection;
 		private int _guardDirectionIndex = -1;
+		private HashSet<Vector2Int> _positionsVisited = new HashSet<Vector2Int>();
+
 		private EditorCoroutine _executePuzzleCoroutine = null;
 
 		private const char DIR_N = '^';
@@ -46,6 +47,26 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle1()
 		{
+			InitializeMap();
+			
+			_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle1Process(), this);
+		}
+
+		private IEnumerator ExecutePuzzle1Process()
+		{
+			yield return PlotGuardPatrolRoute();
+			
+			LogResult("Total positions visited by guard", _positionsVisited.Count);
+			_executePuzzleCoroutine = null;
+		}
+
+		protected override void ExecutePuzzle2()
+		{
+			
+		}
+
+		private void InitializeMap()
+		{
 			ResetMap();
 			
 			_map.Initialize(_inputDataLines, new[] { '#' }, new[] { '.', DIR_N, DIR_E, DIR_S, DIR_W });
@@ -55,15 +76,7 @@ namespace AoC2024
 			}
 			
 			LocateGuardOnMap();
-			
-			_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle(), this);
 		}
-
-		protected override void ExecutePuzzle2()
-		{
-			
-		}
-
 		
 		[Button("Reset Map")]
 		private void ResetMap()
@@ -103,19 +116,6 @@ namespace AoC2024
 			}
 		}
 
-		private void MoveGuardForward()
-		{
-			_guardPosition += _guardDirection.vector;
-			UpdateGuardView();
-		}
-
-		private void RotateGuardClockwise()
-		{
-			_guardDirectionIndex = (_guardDirectionIndex + 1) % _directions.Count;
-			_guardDirection = _directions[_guardDirectionIndex];
-			UpdateGuardView();
-		}
-
 		private void UpdateGuardView()
 		{
 			// Set guard position
@@ -129,12 +129,12 @@ namespace AoC2024
 			_guard.text = _guardDirection.character.ToString();
 		}
 
-		private IEnumerator ExecutePuzzle()
+		private IEnumerator PlotGuardPatrolRoute()
 		{
-			EditorWaitForSeconds interval = new EditorWaitForSeconds(_isExample ? _intervalExample : _intervalPuzzle);
+			EditorWaitForSeconds interval = new EditorWaitForSeconds(_isExample ? _moveIntervalExample : _moveIntervalPuzzle);
 
-			HashSet<Vector2Int> positionsVisited = new HashSet<Vector2Int>();
-			positionsVisited.Add(_guardPosition);
+			_positionsVisited.Clear();
+			_positionsVisited.Add(_guardPosition);
 			_map.HighlightCellView(_guardPosition, _visitedPositionHighlight);
 
 			yield return interval;
@@ -150,23 +150,28 @@ namespace AoC2024
 					bool isNextCellBlocked = _map.GetCellValue(_guardPosition + _guardDirection.vector);
 					if (isNextCellBlocked)
 					{
-						RotateGuardClockwise();
+						// Rotate guard clockwise
+						_guardDirectionIndex = (_guardDirectionIndex + 1) % _directions.Count;
+						_guardDirection = _directions[_guardDirectionIndex];
 					}
 					else
 					{
-						MoveGuardForward();
-						positionsVisited.Add(_guardPosition);
+						// Move guard forward
+						_guardPosition += _guardDirection.vector;
+						_positionsVisited.Add(_guardPosition);
 						_map.HighlightCellView(_guardPosition, _visitedPositionHighlight);
 
 						if (_isExample)
 						{
+							UpdateGuardView();
 							yield return interval;
 						}
 						else
 						{
 							intervalsSkipped++;
-							if (intervalsSkipped > _intervalSkipPuzzle)
+							if (intervalsSkipped > _moveIntervalSkipPuzzle)
 							{
+								UpdateGuardView();
 								intervalsSkipped = 0;
 								yield return interval;
 							}
@@ -179,9 +184,7 @@ namespace AoC2024
 				}
 			}
 			
-
-			LogResult("Total positions visited by guard", positionsVisited.Count);
-			_executePuzzleCoroutine = null;
+			UpdateGuardView();
 		}
 	}
 }

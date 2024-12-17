@@ -356,9 +356,9 @@ MonoBehaviour:
   _puzzleData: {fileID: 4900000, guid: 2c0358f7dd27eeb4e91662ea70a892ba, type: 3}
   _map: {fileID: 914797881}
   _guard: {fileID: 1185788590}
-  _intervalExample: 0.2
-  _intervalPuzzle: 0.01
-  _intervalSkipPuzzle: 40
+  _moveIntervalExample: 0.25
+  _moveIntervalPuzzle: 0.01
+  _moveIntervalSkipPuzzle: 100
   _blockedPositionHighlight: {r: 0, g: 0, b: 0, a: 1}
   _visitedPositionHighlight: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
 --- !u!4 &466517024
