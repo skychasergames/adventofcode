@@ -103,8 +103,12 @@ public abstract class GridBase<TValue, TCellCollection, TCellViewCollection> : M
 		{
 			DestroyImmediate(transform.GetChild(0).gameObject);
 		}
-		
-		_cellViews = (TCellViewCollection)Activator.CreateInstance(typeof(TCellViewCollection), columns, rows);
+
+		if (cells != null)
+		{
+			_cellViews = (TCellViewCollection)Activator.CreateInstance(typeof(TCellViewCollection), columns, rows);
+		}
+
 		_cellViewCount = 0;
 	}
 
@@ -217,6 +221,11 @@ public abstract class GridBase<TValue, TCellCollection, TCellViewCollection> : M
 	{
 		return column >= 0 && column < columns && row >= 0 && row < rows;
 	}
+
+	public bool CellExists(Vector2Int cell)
+	{
+		return CellExists(cell.x, cell.y);
+	}
 	
 	public TValue GetCellValue(int column, int row)
 	{
@@ -251,7 +260,17 @@ public abstract class GridBase<TValue, TCellCollection, TCellViewCollection> : M
 	{
 		HighlightCellView(cell.x, cell.y, color);
 	}
-	
+
+	public CellView GetCellView(int column, int row)
+	{
+		return _cellViews[column, row];
+	}
+
+	public CellView GetCellView(Vector2Int cell)
+	{
+		return GetCellView(cell.x, cell.y);
+	}
+
 	public virtual void HighlightRow(int row, Color color)
 	{
 		for (int column = 0; column < rows; column++)
@@ -385,20 +404,21 @@ public abstract class GridBase<TValue, TCellCollection, TCellViewCollection> : M
 		return GetAllNeighbourCoords(cell.x, cell.y);
 	}
 
-	public Vector2Int GetCoordsOfCellValue(TValue cellValue)
+	public List<Vector2Int> GetCoordsOfCellValue(TValue cellValue)
 	{
+		List<Vector2Int> cellsWithValue = new List<Vector2Int>();
 		for (int row = 0; row < rows; row++)
 		{
 			for (int column = 0; column < columns; column++)
 			{
 				if (Compare(cells[column, row], cellValue))
 				{
-					return new Vector2Int(column, row);
+					cellsWithValue.Add(new Vector2Int(column, row));
 				}
 			}
 		}
 
-		throw new NullReferenceException("Cell value " + cellValue + " was not found in grid");
+		return cellsWithValue;
 	}
 	#endregion
 }
