@@ -50,7 +50,40 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
-			
+			_map.Initialize(_inputDataLines, null, new[] {'.'});
+
+			Dictionary<char, List<Vector2Int>> antennaCellsByFrequency = GetAntennaCellsByFrequency();
+
+			HashSet<Vector2Int> antinodeCells = new HashSet<Vector2Int>();
+
+			// Iterate over antenna types
+			foreach (List<Vector2Int> antennaCells in antennaCellsByFrequency.Values)
+			{
+				// Iterate over each antenna of type
+				foreach (Vector2Int antennaCell in antennaCells)
+				{
+					foreach (Vector2Int otherAntennaCell in antennaCells.Where(otherAntennaCell => otherAntennaCell != antennaCell))
+					{
+						Vector2Int distance = otherAntennaCell - antennaCell;
+
+						int harmonics = 0;
+						bool cellExists = true;
+						while (cellExists)
+						{
+							harmonics++;
+							Vector2Int antinodeCell = antennaCell + distance * harmonics;
+							cellExists = _map.CellExists(antinodeCell);
+							if (cellExists)
+							{
+								antinodeCells.Add(antinodeCell);
+								_map.HighlightCellView(antinodeCell, _antinodeColor);
+							}
+						}
+					}
+				}
+			}
+
+			LogResult("Total antinode locations", antinodeCells.Count);
 		}
 
 		private Dictionary<char, List<Vector2Int>> GetAntennaCellsByFrequency()
