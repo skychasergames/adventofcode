@@ -87,6 +87,18 @@ public abstract class PuzzleBase : MonoBehaviour
 		return result;
 	}
 
+	protected int[] ParseIntArray(string input, string delimiter)
+	{
+		string[] strings = SplitString(input, delimiter);
+		int[] result = new int[strings.Length];
+		for (int i = 0; i < result.Length; i++)
+		{
+			result[i] = int.Parse(strings[i]);
+		}
+
+		return result;
+	}
+
 	protected void Log(string label)
 	{
 		Debug.Log("[" + name + "] " + label);
