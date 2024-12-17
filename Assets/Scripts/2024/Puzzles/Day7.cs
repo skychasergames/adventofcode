@@ -11,11 +11,20 @@ namespace AoC2024
 		{
 			ADD,
 			MULTIPLY,
-			
-			Count
+			CONCAT
 		}
 		
 		protected override void ExecutePuzzle1()
+		{
+			ExecutePuzzle(new[] { Operator.ADD, Operator.MULTIPLY });
+		}
+
+		protected override void ExecutePuzzle2()
+		{
+			ExecutePuzzle(new[] { Operator.ADD, Operator.MULTIPLY, Operator.CONCAT });
+		}
+
+		private void ExecutePuzzle(Operator[] operators)
 		{
 			ulong sumOfValidTestValues = 0;
 			
@@ -27,14 +36,14 @@ namespace AoC2024
 				int numPairs = numbers.Length - 1;
 
 				// Generate all possible combinations of operators
-				int numOperatorCombinations = (int)Mathf.Pow((int)Operator.Count, numPairs);
+				int numOperatorCombinations = (int)Mathf.Pow(operators.Length, numPairs);
 				Operator[][] operatorCombinations = new Operator[numOperatorCombinations][];
 				for (int operatorCombination = 0; operatorCombination < operatorCombinations.Length; operatorCombination++)
 				{
 					operatorCombinations[operatorCombination] = new Operator[numPairs];
 					for (int pair = 0; pair < numPairs; pair++)
 					{
-						operatorCombinations[operatorCombination][pair] = (Operator)Mathf.FloorToInt(operatorCombination / Mathf.Pow((int)Operator.Count, pair) % (int)Operator.Count);
+						operatorCombinations[operatorCombination][pair] = operators[Mathf.FloorToInt(operatorCombination / Mathf.Pow(operators.Length, pair) % operators.Length)];
 					}
 				}
 				
@@ -54,7 +63,10 @@ namespace AoC2024
 							calculatedValue *= (ulong)numbers[pair+1];
 							break;
 						
-						case Operator.Count:
+						case Operator.CONCAT:
+							calculatedValue = ulong.Parse(string.Concat(calculatedValue, numbers[pair+1]));
+							break;
+						
 						default:
 							throw new ArgumentOutOfRangeException("Unhandled operator: " + operatorCombination[pair].ToString());
 						}
@@ -71,11 +83,6 @@ namespace AoC2024
 			}
 
 			LogResult("Total calibration result", sumOfValidTestValues);
-		}
-
-		protected override void ExecutePuzzle2()
-		{
-			
 		}
 		
 		/*				
@@ -109,6 +116,5 @@ namespace AoC2024
 		7 -> 1, 1, 1
 		etc.
 		*/
-
 	}
 }
