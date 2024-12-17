@@ -5,6 +5,7 @@ using System.Linq;
 using NaughtyAttributes;
 using TMPro;
 using Unity.EditorCoroutines.Editor;
+using UnityEditor;
 
 namespace AoC2024
 {
@@ -15,15 +16,27 @@ namespace AoC2024
 		[SerializeField] private float _moveIntervalExample = 0.25f;
 		[SerializeField] private float _moveIntervalPuzzle = 0.01f;
 		[SerializeField] private int _moveIntervalSkipPuzzle = 100;
+		[SerializeField] private float _obstructionIntervalExample = 1f;
+		[SerializeField] private float _obstructionIntervalPuzzle = 0.5f;
 		
-		[SerializeField] private Color _blockedPositionHighlight = Color.black;
+		[SerializeField] private Color _obstructionHighlight = Color.black;
 		[SerializeField] private Color _visitedPositionHighlight = Color.yellow;
+		
+		[SerializeField] private Color _potentialObstructionHighlight = Color.grey;
+		[SerializeField] private Color _potentialVisitedPositionHighlight = new Color(1.0f, 0.6f, 0.0f);
+		
+		private Vector2Int _guardStartPosition = new Vector2Int();
+		private Direction _guardStartDirection;
+		private int _guardStartDirectionIndex = -1;
 		
 		private Vector2Int _guardPosition = new Vector2Int();
 		private Direction _guardDirection;
 		private int _guardDirectionIndex = -1;
 		private HashSet<Vector2Int> _positionsVisited = new HashSet<Vector2Int>();
+		private HashSet<Vector2Int> _potentialPositionsVisited = new HashSet<Vector2Int>();
 
+		private int _guardLoopObstructionPositionsFound = 0;
+		
 		private EditorCoroutine _executePuzzleCoroutine = null;
 
 		private const char DIR_N = '^';
@@ -62,7 +75,46 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
+			InitializeMap();
+
+			_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle2Process(), this);
+		}
+
+		private IEnumerator ExecutePuzzle2Process()
+		{
+			yield return PlotGuardPatrolRoute();
 			
+			EditorWaitForSeconds obstructionInterval = new EditorWaitForSeconds(_isExample ? _obstructionIntervalExample : _obstructionIntervalPuzzle);
+
+			Log("Guard route plotted");
+
+			// Identify potential obstruction locations which cause the guard to get stuck in a loop
+			_guardLoopObstructionPositionsFound = 0;
+			foreach (Vector2Int potentialObstructionPosition in _positionsVisited.Where(potentialObstructionPosition => potentialObstructionPosition != _guardStartPosition))
+			{
+				LogResult("Testing obstruction position", potentialObstructionPosition);
+				_map.SetCellValue(potentialObstructionPosition, true);
+				_map.HighlightCellView(potentialObstructionPosition, _potentialObstructionHighlight);
+
+				yield return PlotPotentialGuardRoute(potentialObstructionPosition);
+				
+				EditorApplication.QueuePlayerLoopUpdate();
+				yield return obstructionInterval;
+
+				// Restore state of cell highlights
+				_map.SetCellValue(potentialObstructionPosition, false);
+				foreach (Vector2Int potentialVisitedPosition in _potentialPositionsVisited)
+				{
+					_map.HighlightCellView(potentialVisitedPosition, Color.white);
+				}
+				foreach (Vector2Int originalVisitedPosition in _positionsVisited)
+				{
+					_map.HighlightCellView(originalVisitedPosition, _visitedPositionHighlight);
+				}
+			}
+			
+			LogResult("Total potential obstructions that cause guard to loop", _guardLoopObstructionPositionsFound);
+			_executePuzzleCoroutine = null;
 		}
 
 		private void InitializeMap()
@@ -72,7 +124,7 @@ namespace AoC2024
 			_map.Initialize(_inputDataLines, new[] { '#' }, new[] { '.', DIR_N, DIR_E, DIR_S, DIR_W });
 			foreach (Vector2Int cell in _map.GetCoordsOfCellValue(true))
 			{
-				_map.HighlightCellView(cell, _blockedPositionHighlight);
+				_map.HighlightCellView(cell, _obstructionHighlight);
 			}
 			
 			LocateGuardOnMap();
@@ -89,10 +141,10 @@ namespace AoC2024
 
 			_map.ClearCellViews();
 			
-			_guardPosition = Vector2Int.zero;
+			_guardStartPosition = _guardPosition = Vector2Int.zero;
+			_guardStartDirectionIndex = _guardDirectionIndex = 0;
+			_guardStartDirection = _guardDirection = _directions[0];
 			_guard.transform.position = Vector2.zero;
-			_guardDirectionIndex = 0;
-			_guardDirection = _directions[0];
 			_guard.SetText("^");
 		}
 
@@ -106,9 +158,9 @@ namespace AoC2024
 					char c = _inputDataLines[y][x];
 					if (directionChars.Contains(c))
 					{
-						_guardPosition = new Vector2Int(x, y);
-						_guardDirectionIndex = _directions.FindIndex(dir => c == dir.character);
-						_guardDirection = _directions[_guardDirectionIndex];
+						_guardStartPosition = _guardPosition = new Vector2Int(x, y);
+						_guardStartDirectionIndex = _guardDirectionIndex = _directions.FindIndex(dir => c == dir.character);
+						_guardStartDirection = _guardDirection = _directions[_guardDirectionIndex];
 						UpdateGuardView();
 						return;
 					}
@@ -144,10 +196,11 @@ namespace AoC2024
 			bool isGuardOnMap = true;
 			while (isGuardOnMap)
 			{
-				bool isNextCellOnBoard = _map.CellExists(_guardPosition + _guardDirection.vector);
+				Vector2Int nextPosition = _guardPosition + _guardDirection.vector;
+				bool isNextCellOnBoard = _map.CellExists(nextPosition);
 				if (isNextCellOnBoard)
 				{
-					bool isNextCellBlocked = _map.GetCellValue(_guardPosition + _guardDirection.vector);
+					bool isNextCellBlocked = _map.GetCellValue(nextPosition);
 					if (isNextCellBlocked)
 					{
 						// Rotate guard clockwise
@@ -184,6 +237,82 @@ namespace AoC2024
 				}
 			}
 			
+			UpdateGuardView();
+		}
+
+		private IEnumerator PlotPotentialGuardRoute(Vector2Int potentialObstructionPosition)
+		{
+			EditorWaitForSeconds interval = new EditorWaitForSeconds(_isExample ? _moveIntervalExample : _moveIntervalPuzzle);
+
+			_guardPosition = _guardStartPosition;
+			_guardDirectionIndex = _guardStartDirectionIndex;
+			_guardDirection = _guardStartDirection;
+			UpdateGuardView();
+			
+			HashSet<(Vector2Int position, char dir)> obstructionsEncountered = new HashSet<(Vector2Int, char)>();
+			
+			_potentialPositionsVisited.Clear();
+			_potentialPositionsVisited.Add(_guardPosition);
+			_map.HighlightCellView(_guardPosition, _potentialVisitedPositionHighlight);
+
+			yield return interval;
+
+			int intervalsSkipped = 0;
+
+			bool isGuardOnMap = true;
+			while (isGuardOnMap)
+			{
+				Vector2Int nextPosition = _guardPosition + _guardDirection.vector;
+				bool isNextCellOnBoard = _map.CellExists(nextPosition);
+				if (isNextCellOnBoard)
+				{
+					bool isNextCellBlocked = _map.GetCellValue(nextPosition);
+					if (isNextCellBlocked)
+					{
+						// Encountered obstruction
+						bool isNewObstruction = obstructionsEncountered.Add((nextPosition, _guardDirection.character));
+						if (!isNewObstruction)
+						{
+							// Encountered the same obstruction from the same direction again -- guard is a caught in a loop!
+							_guardLoopObstructionPositionsFound++;
+							LogResult("Loop found with obstruction added at", potentialObstructionPosition);
+							break;
+						}
+						
+						// Rotate guard clockwise
+						_guardDirectionIndex = (_guardDirectionIndex + 1) % _directions.Count;
+						_guardDirection = _directions[_guardDirectionIndex];
+					}
+					else
+					{
+						// Move guard forward
+						_guardPosition += _guardDirection.vector;
+						_potentialPositionsVisited.Add(_guardPosition);
+						_map.HighlightCellView(_guardPosition, _potentialVisitedPositionHighlight);
+
+						if (_isExample)
+						{
+							UpdateGuardView();
+							yield return interval;
+						}
+						else
+						{
+							intervalsSkipped++;
+							if (intervalsSkipped > _moveIntervalSkipPuzzle)
+							{
+								UpdateGuardView();
+								intervalsSkipped = 0;
+								yield return interval;
+							}
+						}
+					}
+				}
+				else
+				{
+					isGuardOnMap = false;
+				}
+			}
+
 			UpdateGuardView();
 		}
 	}

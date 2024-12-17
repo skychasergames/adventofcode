@@ -356,11 +356,15 @@ MonoBehaviour:
   _puzzleData: {fileID: 4900000, guid: 2c0358f7dd27eeb4e91662ea70a892ba, type: 3}
   _map: {fileID: 914797881}
   _guard: {fileID: 1185788590}
-  _moveIntervalExample: 0.25
+  _moveIntervalExample: 0.02
   _moveIntervalPuzzle: 0.01
-  _moveIntervalSkipPuzzle: 100
-  _blockedPositionHighlight: {r: 0, g: 0, b: 0, a: 1}
+  _moveIntervalSkipPuzzle: 10000
+  _obstructionIntervalExample: 0.5
+  _obstructionIntervalPuzzle: 0.01
+  _obstructionHighlight: {r: 0, g: 0, b: 0, a: 1}
   _visitedPositionHighlight: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  _potentialObstructionHighlight: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  _potentialVisitedPositionHighlight: {r: 1, g: 0.6, b: 0, a: 1}
 --- !u!4 &466517024
 Transform:
   m_ObjectHideFlags: 0
