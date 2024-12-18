@@ -31,7 +31,11 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
+			ResetMap();
 			
+			string[][] mapDataArrays = SplitMapsFromInputDataLines();
+			
+			_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle(mapDataArrays), this);
 		}
 		
 		[Button("Reset Map")]
@@ -78,17 +82,20 @@ namespace AoC2024
 				yield return mapInterval;
 
 				int totalTrailheadScore = 0;
+				int totalTrailheadRating = 0;
 				
 				foreach (Vector2Int trailheadCell in _map.GetCoordsOfCellValue(0))
 				{
-					// Calculate trailhead score and highlight trails
-					int trailheadScore = GetTrailheadScoreAndHighlightTrails(trailheadCell, out List<Vector2Int> highlightedCells);
+					// Calculate trailhead score/rating and highlight trails
+					int trailheadScore = GetTrailheadScoreAndHighlightTrails(trailheadCell, out List<Vector2Int> highlightedCells, out int trailheadRating);
 					totalTrailheadScore += trailheadScore;
+					totalTrailheadRating += trailheadRating;
 					
 					// Re-highlight trailhead
 					_map.HighlightCellView(trailheadCell, _trailheadColor);
 					
 					LogResult("Trailhead score for " + trailheadCell, trailheadScore);
+					LogResult("Trailhead rating for " + trailheadCell, trailheadRating);
 					
 					EditorApplication.QueuePlayerLoopUpdate();
 					yield return trailheadInterval;
@@ -101,6 +108,7 @@ namespace AoC2024
 				}
 
 				LogResult("Total trailhead score", totalTrailheadScore);
+				LogResult("Total trailhead rating", totalTrailheadRating);
 				
 				yield return mapInterval;
 			}
@@ -108,9 +116,10 @@ namespace AoC2024
 			_executePuzzleCoroutine = null;
 		}
 
-		private int GetTrailheadScoreAndHighlightTrails(Vector2Int trailhead, out List<Vector2Int> highlightedCells)
+		private int GetTrailheadScoreAndHighlightTrails(Vector2Int trailhead, out List<Vector2Int> highlightedCells, out int trailheadRating)
 		{
 			List<Vector2Int> tempHighlightedCells = new List<Vector2Int>(); // Using temp variable because you can't use out parameter in local functions
+			int tempTrailheadRating = 0;
 			HashSet<Vector2Int> peakCells = new HashSet<Vector2Int>();
 
 			TraverseHikingTrail(1, trailhead);
@@ -124,6 +133,7 @@ namespace AoC2024
 					peakCells.Add(currentCell);
 					_map.HighlightCellView(currentCell, _peakColor);
 					tempHighlightedCells.Add(currentCell);
+					tempTrailheadRating++;
 					return;
 				}
 
@@ -137,6 +147,7 @@ namespace AoC2024
 			}
 
 			highlightedCells = tempHighlightedCells;
+			trailheadRating = tempTrailheadRating;
 			return peakCells.Count;
 		}
 	}
