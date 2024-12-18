@@ -22,7 +22,16 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
-			
+			foreach (string diskMapString in _inputDataLines)
+			{
+				ushort?[] blocks = GetBlocks(diskMapString);
+				LogBlocks("Expanded disk map", blocks);
+
+				ReorderBlocksWithoutFragmentation(ref blocks);
+				LogBlocks("Reordered disk map", blocks);
+
+				CalculateChecksum(blocks);
+			}
 		}
 
 		private ushort?[] GetBlocks(string diskMapString)
@@ -88,6 +97,63 @@ namespace AoC2024
 						}
 						toBlock++;
 					}
+				}
+				fromBlock--;
+			}
+		}
+
+		private void ReorderBlocksWithoutFragmentation(ref ushort?[] blocks)
+		{
+			// Backfill whole files into free spaces
+			int fromBlock = blocks.Length-1;
+			
+			// Locate next available block to move
+			while (fromBlock >= 0)
+			{
+				if (blocks[fromBlock] != null)
+				{
+					// Determine block size of file
+					ushort? fileID = blocks[fromBlock];
+					int fileEndBlock = fromBlock;
+					while (fromBlock > 0 && blocks[fromBlock-1] == fileID)
+					{
+						fromBlock--;
+					}
+
+					int fileSize = (fileEndBlock - fromBlock) + 1;
+					
+					// Find block of space large enough for file
+					int toBlock = 0;
+					while (toBlock < fromBlock)
+					{
+						if (blocks[toBlock] == null)
+						{
+							// Determine size of empty space
+							int spaceStartBlock = toBlock;
+							while (toBlock < fromBlock && blocks[toBlock+1] == null)
+							{
+								toBlock++;
+							}
+
+							int spaceSize = (toBlock - spaceStartBlock) + 1;
+							if (spaceSize >= fileSize)
+							{
+								//Log("Move from [" + fromBlock + "-" + fileEndBlock + "] to [" + spaceStartBlock + "-" + (spaceStartBlock + fileSize) + "]");
+								
+								// Move file
+								for (int i = 0; i < fileSize; i++)
+								{
+									blocks[spaceStartBlock + i] = fileID;
+									blocks[fromBlock + i] = null;
+								}
+
+								//LogBlocks("After move", blocks);
+								break;
+							}
+						}
+						toBlock++;
+					}
+
 				}
 				fromBlock--;
 			}
