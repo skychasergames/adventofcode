@@ -1498,6 +1498,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _exampleData: {fileID: 4900000, guid: 9d9ddb4181b39b44da5b1a6da7012a56, type: 3}
   _puzzleData: {fileID: 4900000, guid: 67b3258c4992bf2488ce955ea1c26747, type: 3}
+  _blinks: 75
 --- !u!4 &1979090139
 Transform:
   m_ObjectHideFlags: 0
