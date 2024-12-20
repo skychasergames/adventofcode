@@ -27,8 +27,8 @@ namespace AoC2024
 				int area = region.plots.Count;
 				int perimeter = region.plots.Sum(plot =>
 				{
-					LogResult(plot.coords + " perimeter", plot.GetPerimeter());
-					return plot.GetPerimeter();
+					LogResult(plot.Key + " perimeter", plot.Value.GetPerimeter());
+					return plot.Value.GetPerimeter();
 				});
 				int cost = area * perimeter;
 				
@@ -41,7 +41,84 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
+			_gardenPlots.Initialize(_inputDataLines);
+			_fencesHorizontal.Initialize(_gardenPlots.columns, _gardenPlots.rows+1);
+			_fencesVertical.Initialize(_gardenPlots.columns+1, _gardenPlots.rows);
+
+			int totalCost = 0;
 			
+			List<Region> regions = GroupGardenPlotsByRegion();
+			foreach (Region region in regions)
+			{
+				int xMin = region.plots.Keys.Min(coords => coords.x);
+				int xMax = region.plots.Keys.Max(coords => coords.x);
+				int yMin = region.plots.Keys.Min(coords => coords.y);
+				int yMax = region.plots.Keys.Max(coords => coords.y);
+
+				int totalSides = 0;
+				
+				// Check row-by-row for contiguous north and/or south fences
+				for (int y = yMin; y <= yMax; y++)
+				{
+					bool contiguousNorthFence = false;
+					bool contiguousSouthFence = false;
+					for (int x = xMin; x <= xMax; x++)
+					{
+						Vector2Int coords = new Vector2Int(x, y);
+						if (region.plots.TryGetValue(coords, out GardenPlot plot))
+						{
+							CheckForContiguousFence(!plot.extendsNorth, ref contiguousNorthFence);
+							CheckForContiguousFence(!plot.extendsSouth, ref contiguousSouthFence);
+						}
+						else
+						{
+							contiguousNorthFence = false;
+							contiguousSouthFence = false;
+						}
+					}
+				}
+				
+				// Check column-by-column for contiguous east and/or west fences
+				for (int x = xMin; x <= xMax; x++)
+				{
+					bool contiguousEastFence = false;
+					bool contiguousWestFence = false;
+					for (int y = yMin; y <= yMax; y++)
+					{
+						Vector2Int coords = new Vector2Int(x, y);
+						if (region.plots.TryGetValue(coords, out GardenPlot plot))
+						{
+							CheckForContiguousFence(!plot.extendsEast, ref contiguousEastFence);
+							CheckForContiguousFence(!plot.extendsWest, ref contiguousWestFence);
+						}
+						else
+						{
+							contiguousEastFence = false;
+							contiguousWestFence = false;
+						}
+					}
+				}
+				
+				int area = region.plots.Count;
+				int cost = area * totalSides;
+				
+				Log("Region of plant type " + region.plantType + " with " + area + " plots, " + totalSides + " sides, and cost " + cost);
+				totalCost += cost;
+				
+				// Local method
+				void CheckForContiguousFence(bool plotFence, ref bool contiguousFence)
+				{
+					if (plotFence && !contiguousFence)
+					{
+						contiguousFence = true;
+						totalSides++;
+					}
+
+					contiguousFence = plotFence;
+				}
+			}
+
+			LogResult("Total cost", totalCost);
 		}
 		
 		[Button("Reset Map")]
@@ -54,13 +131,12 @@ namespace AoC2024
 
 		private struct Region
 		{
-			public List<GardenPlot> plots;
+			public Dictionary<Vector2Int, GardenPlot> plots;
 			public char plantType;
 		}
 
 		private class GardenPlot
 		{
-			public Vector2Int coords;
 			public bool extendsNorth;
 			public bool extendsEast;
 			public bool extendsSouth;
@@ -83,36 +159,34 @@ namespace AoC2024
 			{
 				for (int x = 0; x < _gardenPlots.columns; x++)
 				{
-					Vector2Int coords = new Vector2Int(x, y);
+					Vector2Int homePlotCoords = new Vector2Int(x, y);
 					
 					// Skip if this plot has already been grouped
-					if (regions.Any(region => region.plots.Any(plot => plot.coords == coords)))
+					if (regions.Any(region => region.plots.Any(plot => plot.Key == homePlotCoords)))
 					{
 						continue;
 					}
 					
-					GardenPlot homePlot = new GardenPlot { coords = coords };
-					
 					// Recursively group all orthogonal neighbours of the same type
 					Region region = new Region
 					{
-						plots = new List<GardenPlot>(),
-						plantType = _gardenPlots.GetCellValue(homePlot.coords)
+						plots = new Dictionary<Vector2Int, GardenPlot>(),
+						plantType = _gardenPlots.GetCellValue(homePlotCoords)
 					};
 					
 					Color regionColor = Random.ColorHSV(0f, 1f, 0.25f, 0.75f, 1f, 1f);
 					
-					HighlightAndAddMatchingNeighbours(homePlot);
-					void HighlightAndAddMatchingNeighbours(GardenPlot plot)
+					HighlightAndAddMatchingNeighbours(homePlotCoords);
+					void HighlightAndAddMatchingNeighbours(Vector2Int coords)
 					{
-						region.plots.Add(plot);
-						_gardenPlots.HighlightCellView(plot.coords, regionColor);
+						GardenPlot plot = new GardenPlot();
+						region.plots.Add(coords, plot);
+						_gardenPlots.HighlightCellView(coords, regionColor);
 
-						plot.extendsNorth = CheckNeighbour(plot.coords + new Vector2Int(0, -1));
-						plot.extendsEast = CheckNeighbour(plot.coords + new Vector2Int(1, 0));
-						plot.extendsSouth = CheckNeighbour(plot.coords + new Vector2Int(0, 1));
-						plot.extendsWest = CheckNeighbour(plot.coords + new Vector2Int(-1, 0));
-						
+						plot.extendsNorth = CheckNeighbour(coords + new Vector2Int(0, -1));
+						plot.extendsEast = CheckNeighbour(coords + new Vector2Int(1, 0));
+						plot.extendsSouth = CheckNeighbour(coords + new Vector2Int(0, 1));
+						plot.extendsWest = CheckNeighbour(coords + new Vector2Int(-1, 0));
 						
 						HighlightFences();
 						
@@ -121,9 +195,9 @@ namespace AoC2024
 						{
 							if (_gardenPlots.CellExists(neighbourCoords) && _gardenPlots.GetCellValue(neighbourCoords) == region.plantType)
 							{
-								if (region.plots.All(groupedPlot => groupedPlot.coords != neighbourCoords))
+								if (!region.plots.ContainsKey(neighbourCoords))
 								{
-									HighlightAndAddMatchingNeighbours(new GardenPlot { coords = neighbourCoords });
+									HighlightAndAddMatchingNeighbours(neighbourCoords);
 								}
 								
 								return true;
@@ -137,22 +211,22 @@ namespace AoC2024
 						{
 							if (!plot.extendsNorth)
 							{
-								_fencesHorizontal.HighlightCellView(plot.coords, Color.white);
+								_fencesHorizontal.HighlightCellView(coords, Color.white);
 							}
 
 							if (!plot.extendsEast)
 							{
-								_fencesVertical.HighlightCellView(plot.coords.x + 1, plot.coords.y, Color.white);
+								_fencesVertical.HighlightCellView(coords.x + 1, coords.y, Color.white);
 							}
 
 							if (!plot.extendsSouth)
 							{
-								_fencesHorizontal.HighlightCellView(plot.coords.x, plot.coords.y + 1, Color.white);
+								_fencesHorizontal.HighlightCellView(coords.x, coords.y + 1, Color.white);
 							}
 							
 							if (!plot.extendsWest)
 							{
-								_fencesVertical.HighlightCellView(plot.coords, Color.white);
+								_fencesVertical.HighlightCellView(coords, Color.white);
 							}
 						}
 					}
