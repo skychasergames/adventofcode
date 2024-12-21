@@ -13,4 +13,24 @@ public class IntGrid : GridBase<int, StaticCellCollection<int>, StaticCellCollec
 	{
 		return a == b;
 	}
+
+	public void IncrementCellValue(Vector2Int cell)
+	{
+		IncrementCellValue(cell.x, cell.y);
+	}
+
+	public void IncrementCellValue(int column, int row)
+	{
+		SetCellValue(column, row, cells[column, row] + 1);
+	}
+
+	public void DecrementCellValue(Vector2Int cell)
+	{
+		DecrementCellValue(cell.x, cell.y);
+	}
+
+	public void DecrementCellValue(int column, int row)
+	{
+		SetCellValue(column, row, cells[column, row] - 1);
+	}
 }
