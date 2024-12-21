@@ -929,7 +929,7 @@ MonoBehaviour:
   _cellViewPrefab: {fileID: 1656790659944282751, guid: 5e4fe3e6f8fdce24b9359ceb27621a54, type: 3}
   _renderingCullingMode: 1
   _onlyRenderCellsWithValues: 0
-  _disableRenderingAboveCellCount: 1000
+  _disableRenderingAboveCellCount: 12000
   _cellSize: {x: 25, y: 25}
 --- !u!224 &808880530
 RectTransform:
@@ -1263,8 +1263,9 @@ MonoBehaviour:
   _puzzleData: {fileID: 4900000, guid: 19f9381f6ac7f4e4b833f28f2889c17d, type: 3}
   _map: {fileID: 808880529}
   _guardColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  _steps: 100
-  _stepInterval: 0.05
+  _steps: 2
+  _stepInterval: 1
+  _manualStepDirection: 1
 --- !u!4 &1259092703
 Transform:
   m_ObjectHideFlags: 0
@@ -2034,7 +2035,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &2078037461
 RectTransform:
   m_ObjectHideFlags: 0

@@ -22,9 +22,13 @@ namespace AoC2024
 		[SerializeField] private Color _guardColor = Color.yellow;
 		[SerializeField] private int _steps = 100;
 		[SerializeField] private float _stepInterval = 0.5f;
+		
+		[SerializeField] private int _manualStepDirection = 1;
 
 		private List<Guard> _guards = new List<Guard>();
 		private EditorCoroutine _executePuzzleCoroutine = null;
+
+		private int _currentStep = 0;
 
 		protected override void ExecutePuzzle1()
 		{
@@ -34,7 +38,14 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
+			InitializeMap();
+			_currentStep = 0;
 			
+			// Easter Egg first appears on step 6493 (I worked this out using Google Sheets).
+			// There's a horizontal visual artifact that happens on step 4 and every 103 steps after,
+			// and a vertical visual artifact that happens on step 29 and every 101 steps after.
+			// These two visual artifacts finally converge on step 6493, resulting in the Christmas Tree appearing.
+			StepSimulation(6493);
 		}
 
 		private class Guard
@@ -89,43 +100,7 @@ namespace AoC2024
 				yield return interval;
 				
 				LogResult("Step", step);
-				foreach (Guard guard in _guards)
-				{
-					_map.DecrementCellValue(guard.position);
-					if (_map.GetCellValue(guard.position) == 0)
-					{
-						_map.HighlightCellView(guard.position, Color.white);
-					}
-
-					//Log("Moved guard from " + guard.position + " by " + guard.velocity);
-					guard.position += guard.velocity;
-					
-					// Teleport (wrap around) if necessary
-					if (guard.position.x < 0)
-					{
-						guard.position.x += _map.columns;
-					}
-					else if (guard.position.x >= _map.columns)
-					{
-						guard.position.x -= _map.columns;
-					}
-					
-					if (guard.position.y < 0)
-					{
-						guard.position.y += _map.rows;
-					}
-					else if (guard.position.y >= _map.rows)
-					{
-						guard.position.y -= _map.rows;
-					}
-					
-					//LogResult("to", guard.position);
-					
-					_map.IncrementCellValue(guard.position);
-					_map.HighlightCellView(guard.position, _guardColor);
-				}
-				
-				EditorApplication.QueuePlayerLoopUpdate();
+				StepSimulation();
 			}
 
 			int safetyFactor = GetSafetyFactor();
@@ -153,6 +128,57 @@ namespace AoC2024
 
 				return guards;
 			}
+		}
+
+		private void StepSimulation(int step = 1)
+		{
+			foreach (Guard guard in _guards)
+			{
+				_map.DecrementCellValue(guard.position);
+				if (_map.GetCellValue(guard.position) == 0)
+				{
+					_map.HighlightCellView(guard.position, Color.white);
+				}
+
+				//Log("Moved guard from " + guard.position + " by " + guard.velocity);
+				guard.position += step * guard.velocity;
+					
+				// Teleport (wrap around) if necessary
+				while (guard.position.x < 0)
+				{
+					guard.position.x += _map.columns;
+				}
+				
+				while (guard.position.x >= _map.columns)
+				{
+					guard.position.x -= _map.columns;
+				}
+					
+				while (guard.position.y < 0)
+				{
+					guard.position.y += _map.rows;
+				}
+				
+				while (guard.position.y >= _map.rows)
+				{
+					guard.position.y -= _map.rows;
+				}
+					
+				//LogResult("to", guard.position);
+					
+				_map.IncrementCellValue(guard.position);
+				_map.HighlightCellView(guard.position, _guardColor);
+			}
+				
+			EditorApplication.QueuePlayerLoopUpdate();
+		}
+
+		[Button("Manual Step")]
+		private void ManualStep()
+		{
+			_currentStep += _manualStepDirection;
+			LogResult("Step", _currentStep);
+			StepSimulation(_manualStepDirection);
 		}
 	}
 }
