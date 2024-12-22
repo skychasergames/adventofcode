@@ -142,63 +142,94 @@ namespace AoC2024
 			_executePuzzleCoroutine = null;
 		}
 
+		private struct PathOption
+		{
+			public int directionIndex;
+			public Vector2Int position;
+			public char cell;
+
+			public PathOption(int newDirectionIndex, Vector2Int newPosition, char newCell)
+			{
+				directionIndex = newDirectionIndex;
+				position = newPosition;
+				cell = newCell;
+			}
+		}
+
 		private List<PathState> CalculatePossiblePaths()
 		{
-			List<PathState> pathStates = new List<PathState> { _startingPathState };
-			
-			Step(_startingPathState);
+			List<PathState> completedPathStates = new List<PathState>();
 
-			// Local method, recursive
-			void Step(PathState currentPathState)
+			Queue<(PathState pathState, PathOption option)> pendingPathStates = new Queue<(PathState pathState, PathOption option)>();
+			Dictionary<Vector2Int, int> lowestScorePerPosition = new Dictionary<Vector2Int, int>();
+
+			foreach (PathOption pathOption in GetPathOptions(_startingPathState))
 			{
+				PathState newPathState = new PathState(_startingPathState);
+				pendingPathStates.Enqueue((newPathState, pathOption));
+			}
+
+			while (pendingPathStates.Count > 0)
+			{
+				(PathState currentPathState, PathOption currentPathOption) = pendingPathStates.Dequeue();
+				PerformOption(currentPathState, currentPathOption);
+
+				// Check current path score against the previous lowest score
+				int currentPathScore = currentPathState.GetScore();
+				if (lowestScorePerPosition.TryGetValue(currentPathState.reindeerPosition, out int currentPositionLowestScore))
+				{
+					if (currentPathScore < currentPositionLowestScore)
+					{
+						// More efficient than the previous score
+						lowestScorePerPosition[currentPathState.reindeerPosition] = currentPathScore;
+					}
+					else
+					{
+						// Not the most efficient way to reach this position, abort now
+						continue;
+					}
+				}
+				else
+				{
+					// First time reaching this position
+					lowestScorePerPosition.Add(currentPathState.reindeerPosition, currentPathScore);
+				}
+
 				if (currentPathState.foundEndCell)
 				{
-					return;
+					completedPathStates.Add(currentPathState);
 				}
-				
-				List<(int directionIndex, Vector2Int position, char cell)> options = new List<(int directionIndex, Vector2Int position, char cell)>();
-				foreach (int adjacentDirectionIndex in GetAdjacentDirectionIndexes(currentPathState.reindeerDirectionIndex))
+				else
 				{
-					Direction adjacentDirection = _directions[adjacentDirectionIndex];
-					Vector2Int adjacentPosition = currentPathState.reindeerPosition + adjacentDirection.vector;
-					char adjacentCell = _map.GetCellValue(adjacentPosition);
-					if (adjacentCell != '#' && currentPathState.cellsVisited.All(cell => cell.Key != adjacentPosition))
-					{
-						options.Add((adjacentDirectionIndex, adjacentPosition, adjacentCell));
-					}
-				}
-
-				switch (options.Count)
-				{
-				case 0:
-					// Dead end
-					pathStates.Remove(currentPathState);
-					return;
-				
-				case 1:
-					// One path
-					PerformOption(currentPathState, options[0]);
-					Step(currentPathState);
-					break;
-				
-				default:
-					// More than one path
-					pathStates.Remove(currentPathState);
-					foreach ((int directionIndex, Vector2Int position, char cell) option in options)
+					foreach (PathOption option in GetPathOptions(currentPathState))
 					{
 						PathState newPathState = new PathState(currentPathState);
-						pathStates.Add(newPathState);
-						PerformOption(newPathState, option);
-						Step(newPathState);
+						pendingPathStates.Enqueue((newPathState, option));
 					}
-					break;
 				}
 			}
 
-			return pathStates;
+			return completedPathStates;
+		}
+
+		private List<PathOption> GetPathOptions(PathState pathState)
+		{
+			List<PathOption> options = new List<PathOption>();
+			foreach (int adjacentDirectionIndex in GetAdjacentDirectionIndexes(pathState.reindeerDirectionIndex))
+			{
+				Direction adjacentDirection = _directions[adjacentDirectionIndex];
+				Vector2Int adjacentPosition = pathState.reindeerPosition + adjacentDirection.vector;
+				char adjacentCell = _map.GetCellValue(adjacentPosition);
+				if (adjacentCell != '#' && pathState.cellsVisited.All(cell => cell.Key != adjacentPosition))
+				{
+					options.Add(new PathOption(adjacentDirectionIndex, adjacentPosition, adjacentCell));
+				}
+			}
+
+			return options;
 		}
 			
-		private void PerformOption(PathState pathState, (int directionIndex, Vector2Int position, char cell) option)
+		private void PerformOption(PathState pathState, PathOption option)
 		{
 			if (option.directionIndex != pathState.reindeerDirectionIndex)
 			{
