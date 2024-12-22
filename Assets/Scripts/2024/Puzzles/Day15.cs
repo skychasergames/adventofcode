@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System.Text;
 using NaughtyAttributes;
 using TMPro;
 using Unity.EditorCoroutines.Editor;
@@ -30,14 +31,10 @@ namespace AoC2024
 		private const char DIR_W = '<';
 		private const char ROBOT = '@';
 		private const char BOX = 'O';
+		private const char BOX_L = '[';
+		private const char BOX_R = ']';
 		private const char WALL = '#';
 		private const char SPACE = '.';
-		
-		private struct Direction
-		{
-			public char character;
-			public Vector2Int vector;
-		}
 		
 		private Dictionary<char, Vector2Int> _directions = new Dictionary<char, Vector2Int>
 		{
@@ -49,55 +46,67 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle1()
 		{
-			InitializeMap();
+			InitializeMap(false);
 			
 			_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle(), this);
 		}
 
-		private IEnumerator ExecutePuzzle()
-		{
-			EditorWaitForSeconds interval = new EditorWaitForSeconds(_isExample ? _intervalExample : _intervalPuzzle);
-			
-			foreach (char directionChar in _inputDataLines.Where(s => _directions.Keys.Contains(s[0])).SelectMany(s => s))
-			{
-				yield return interval;
-				if (CanRobotMoveInDirection(directionChar, out Vector2Int direction, out List<Vector2Int> boxesToMove))
-				{
-					MoveRobotAndBoxesInDirection(directionChar, direction, boxesToMove);
-				}
-
-				EditorApplication.QueuePlayerLoopUpdate();
-			}
-
-			int totalGPS = CalculateGPS();
-			LogResult("Total GPS", totalGPS);
-			
-			_executePuzzleCoroutine = null;
-		}
-
 		protected override void ExecutePuzzle2()
 		{
+			InitializeMap(true);
 			
+			_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(ExecutePuzzle(), this);
 		}
-
-		private void InitializeMap()
+		
+		private void InitializeMap(bool doubleWidth)
 		{
 			ResetMap();
 			
-			_map.Initialize(_inputDataLines.Where(s => s[0] == WALL).ToArray());
+			_map.Initialize(_inputDataLines.Where(s => s[0] == WALL).Select(s => doubleWidth ? ConvertToDoubleWidth(s) : s).ToArray());
 			
 			foreach (Vector2Int wallCell in _map.GetCoordsOfCellValue(WALL))
 			{
 				_map.HighlightCellView(wallCell, _wallHighlight);
 			}
 			
-			foreach (Vector2Int boxCell in _map.GetCoordsOfCellValue(BOX))
+			foreach (Vector2Int boxCell in _map.GetCoordsOfCellValue(BOX).Union(_map.GetCoordsOfCellValue(BOX_L)).Union(_map.GetCoordsOfCellValue(BOX_R)))
 			{
 				_map.HighlightCellView(boxCell, _boxHighlight);
 			}
 
 			_robotPosition = _map.GetCoordsOfCellValue(ROBOT)[0];
 			_map.HighlightCellView(_robotPosition, _robotHighlight);
+		}
+
+		private string ConvertToDoubleWidth(string singleWidthString)
+		{
+			StringBuilder doubleWidthString = new StringBuilder();
+			foreach (char c in singleWidthString)
+			{
+				switch (c)
+				{
+				case ROBOT:
+					doubleWidthString.Append(ROBOT).Append(SPACE);
+					break;
+				
+				case BOX:
+					doubleWidthString.Append(BOX_L).Append(BOX_R);
+					break;
+				
+				case WALL:
+					doubleWidthString.Append(WALL).Append(WALL);
+					break;
+				
+				case SPACE:
+					doubleWidthString.Append(SPACE).Append(SPACE);
+					break;
+				
+				default:
+					throw new ArgumentOutOfRangeException("Unhandled char: " + c);
+				}
+			}
+
+			return doubleWidthString.ToString();
 		}
 		
 		[Button("Reset Map")]
@@ -112,50 +121,140 @@ namespace AoC2024
 			_map.ClearCellViews();
 		}
 
-		private bool CanRobotMoveInDirection(char directionChar, out Vector2Int direction, out List<Vector2Int> boxesToMove)
+		private IEnumerator ExecutePuzzle()
+		{
+			EditorWaitForSeconds interval = new EditorWaitForSeconds(_isExample ? _intervalExample : _intervalPuzzle);
+			
+			foreach (char directionChar in _inputDataLines.Where(s => _directions.Keys.Contains(s[0])).SelectMany(s => s))
+			{
+				yield return interval;
+				if (CanRobotMoveInDirection(directionChar, out Vector2Int direction, out List<Vector2Int> boxesToMove, out List<Vector2Int> emptySpaceCells))
+				{
+					MoveRobotAndBoxesInDirection(directionChar, direction, boxesToMove, emptySpaceCells);
+				}
+
+				EditorApplication.QueuePlayerLoopUpdate();
+			}
+
+			int totalGPS = CalculateGPS();
+			LogResult("Total GPS", totalGPS);
+			
+			_executePuzzleCoroutine = null;
+		}
+		
+		private bool CanRobotMoveInDirection(char directionChar, out Vector2Int direction, out List<Vector2Int> boxesToMove, out List<Vector2Int> emptySpaceCells)
 		{
 			// Set robot rotation (text)
 			_map.SetCellValue(_robotPosition, directionChar);
 			
 			// Determine if robot can move, and if so which boxes to move
-			direction = _directions[directionChar];
-			boxesToMove = new List<Vector2Int>();
-			Vector2Int checkCell = _robotPosition + direction;
-			while (_map.CellExists(checkCell))
+
+			bool canRobotAndAllBoxesMove = true;
+			Vector2Int dir = _directions[directionChar];
+			List<Vector2Int> tempBoxesToMove = new List<Vector2Int>();
+			List<Vector2Int> tempEmptySpaceCells = new List<Vector2Int>();
+			
+			CheckCell(_robotPosition + dir);
+
+			// Local method, recursive
+			void CheckCell(Vector2Int cell)
 			{
-				char nextCellValue = _map.GetCellValue(checkCell);
-				switch (nextCellValue)
+				if (_map.CellExists(cell))
 				{
-				case SPACE:
-					return true;
+					char nextCellValue = _map.GetCellValue(cell);
+					switch (nextCellValue)
+					{
+					case SPACE:
+						tempEmptySpaceCells.Add(cell);
+						return;
 				
-				case BOX:
-					boxesToMove.Add(checkCell);
-					checkCell += direction;
-					break;
+					case BOX:
+						tempBoxesToMove.Add(cell);
+						CheckCell(cell + dir);
+						break;
+					
+					case BOX_L:
+						Vector2Int rightCell = cell + new Vector2Int(1, 0);
+
+						if (!tempBoxesToMove.Contains(cell))
+						{
+							tempBoxesToMove.Add(cell);
+							CheckCell(cell + dir);
+						}
+
+						if (!tempBoxesToMove.Contains(rightCell))
+						{
+							tempBoxesToMove.Add(rightCell);
+							CheckCell(rightCell + dir);
+						}
+						break;
+					
+					case BOX_R:
+						Vector2Int leftCell = cell + new Vector2Int(-1, 0);
+
+						if (!tempBoxesToMove.Contains(cell))
+						{
+							tempBoxesToMove.Add(cell);
+							CheckCell(cell + dir);
+						}
+
+						if (!tempBoxesToMove.Contains(leftCell))
+						{
+							tempBoxesToMove.Add(leftCell);
+							CheckCell(leftCell + dir);
+						}
+						break;
 				
-				case WALL:
-					return false;
+					case WALL:
+						canRobotAndAllBoxesMove = false;
+						return;
 				
-				default:
-					throw new ArgumentOutOfRangeException("Unhandled char: " + nextCellValue);
+					default:
+						throw new ArgumentOutOfRangeException("Unhandled char: " + nextCellValue);
+					}
 				}
 			}
-			
-			// Somehow reached edge of map?
-			return false;
+
+			direction = dir;
+			boxesToMove = tempBoxesToMove;
+			emptySpaceCells = tempEmptySpaceCells;
+			return canRobotAndAllBoxesMove;
 		}
 		
-		private void MoveRobotAndBoxesInDirection(char directionChar, Vector2Int direction, List<Vector2Int> boxesToMove)
+		private void MoveRobotAndBoxesInDirection(char directionChar, Vector2Int direction, List<Vector2Int> boxesToMove, List<Vector2Int> emptySpaceCells)
 		{
 			_map.SetCellValue(_robotPosition, SPACE);
 			_map.HighlightCellView(_robotPosition, Color.white);
-
+			
 			if (boxesToMove.Count > 0)
 			{
-				Vector2Int emptySpaceCell = boxesToMove[boxesToMove.Count-1] + direction;
-				_map.SetCellValue(emptySpaceCell, BOX);
-				_map.HighlightCellView(emptySpaceCell, _boxHighlight);
+				//LogResult("Empty cells", string.Join(", ", emptySpaceCells));
+				foreach (Vector2Int emptySpaceCell in emptySpaceCells)
+				{
+					// Crawl backwards from each empty space cell, moving boxes as we go
+					int i = 0;
+					while (true)
+					{
+						Vector2Int moveFromCell = emptySpaceCell - direction * (i + 1);
+						Vector2Int moveToCell = emptySpaceCell - direction * i;
+						if (boxesToMove.Contains(moveFromCell))
+						{
+							char boxChar = _map.GetCellValue(moveFromCell);
+							//Log("Moving " + boxChar + " from " + moveFromCell + " to " + moveToCell);
+							_map.SetCellValue(moveToCell, boxChar);
+							_map.HighlightCellView(moveToCell, _boxHighlight);
+							i++;
+						}
+						else
+						{
+							// Moved all boxes, set the last cell to empty
+							//Log("Clearing last cell at " + moveFromCell);
+							_map.SetCellValue(moveToCell, SPACE);
+							_map.HighlightCellView(moveToCell, Color.white);
+							break;
+						}
+					}
+				}
 			}
 
 			_robotPosition += direction;
@@ -170,7 +269,8 @@ namespace AoC2024
 			{
 				for (int x = 0; x < _map.columns; x++)
 				{
-					if (_map.GetCellValue(x, y) == BOX)
+					char cell = _map.GetCellValue(x, y);
+					if (cell == BOX || cell == BOX_L)
 					{
 						int boxGPS = x + 100 * y;
 						totalGPS += boxGPS;
@@ -179,6 +279,52 @@ namespace AoC2024
 			}
 
 			return totalGPS;
+		}
+
+		[Button("Debug Play Map")]
+		private void DebugPlayMap()
+		{
+			InitializeMap(false);
+		}
+
+		[Button("Debug Play Map (double-width)")]
+		private void DebugPlayMapDoubleWidth()
+		{
+			InitializeMap(true);
+		}
+
+		[Button("Debug Move Up")]
+		private void DebugMoveUp()
+		{
+			DebugMove(DIR_N);
+		}
+
+		[Button("Debug Move Down")]
+		private void DebugMoveDown()
+		{
+			DebugMove(DIR_S);
+		}
+
+		[Button("Debug Move Left")]
+		private void DebugMoveLeft()
+		{
+			DebugMove(DIR_W);
+		}
+
+		[Button("Debug Move Right")]
+		private void DebugMoveRight()
+		{
+			DebugMove(DIR_E);
+		}
+
+		private void DebugMove(char directionChar)
+		{
+			if (CanRobotMoveInDirection(directionChar, out Vector2Int direction, out List<Vector2Int> boxesToMove, out List<Vector2Int> emptySpaceCells))
+			{
+				MoveRobotAndBoxesInDirection(directionChar, direction, boxesToMove, emptySpaceCells);
+			}
+
+			EditorApplication.QueuePlayerLoopUpdate();
 		}
 	}
 }
