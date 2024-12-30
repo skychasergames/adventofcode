@@ -37,6 +37,11 @@ public abstract class GridBase<TValue, TCellCollection, TCellViewCollection> : M
 		Initialize(numColumnsAndRows, numColumnsAndRows);
 	}
 	
+	public virtual void Initialize(Vector2Int numColumnsAndRows)
+	{
+		Initialize(numColumnsAndRows.x, numColumnsAndRows.y);
+	}
+	
 	public virtual void Initialize(int numColumns, int numRows)
 	{
 		cells = (TCellCollection)Activator.CreateInstance(typeof(TCellCollection), numColumns, numRows);

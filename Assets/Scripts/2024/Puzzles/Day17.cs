@@ -21,7 +21,6 @@ namespace AoC2024
 		private int[] _program;
 
 		private EditorCoroutine _executePuzzleCoroutine = null;
-		private bool _debugSkipProgram = false;
 
 		private enum Opcode
 		{
@@ -65,14 +64,7 @@ namespace AoC2024
 				_executePuzzleCoroutine = null;
 			}
 			
-			_debugSkipProgram = false;
 			_puzzle2Counter.text = "-";
-		}
-
-		[Button("Debug Skip Program")]
-		private void DebugSkipProgram()
-		{
-			_debugSkipProgram = true;
 		}
 
 		private void ParseProgram(int line)

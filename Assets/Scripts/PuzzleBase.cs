@@ -100,6 +100,12 @@ public abstract class PuzzleBase : MonoBehaviour
 		return result;
 	}
 
+	protected Vector2Int ParseVector2Int(string input, string delimiter)
+	{
+		string[] strings = SplitString(input, delimiter);
+		return new Vector2Int(int.Parse(strings[0]), int.Parse(strings[1]));
+	}
+
 	protected void Log(string label, bool beep = false)
 	{
 		Debug.Log("[" + name + "] " + label);
