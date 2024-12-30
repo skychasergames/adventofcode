@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using NaughtyAttributes;
+using UnityEditor;
 
 public abstract class PuzzleBase : MonoBehaviour
 {
@@ -99,23 +100,43 @@ public abstract class PuzzleBase : MonoBehaviour
 		return result;
 	}
 
-	protected void Log(string label)
+	protected void Log(string label, bool beep = false)
 	{
 		Debug.Log("[" + name + "] " + label);
+
+		if (beep)
+		{
+			EditorApplication.Beep();
+		}
 	}
 	
-	protected void LogResult(string label, object result)
+	protected void LogResult(string label, object result, bool beep = false)
 	{
 		Debug.Log("[" + name + "] " + label + ": " + result);
+
+		if (beep)
+		{
+			EditorApplication.Beep();
+		}
 	}
 
-	protected void LogError(string label)
+	protected void LogError(string label, bool beep = false)
 	{
 		Debug.LogError("[" + name + "] " + label);
+
+		if (beep)
+		{
+			EditorApplication.Beep();
+		}
 	}
 	
-	protected void LogError(string label, object result)
+	protected void LogError(string label, object result, bool beep = false)
 	{
 		Debug.LogError("[" + name + "] " + label + ": " + result);
+
+		if (beep)
+		{
+			EditorApplication.Beep();
+		}
 	}
 }
