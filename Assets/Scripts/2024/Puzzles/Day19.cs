@@ -7,6 +7,7 @@ using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using Cache = System.Collections.Concurrent.ConcurrentDictionary<string, long>;
 
 namespace AoC2024
 {
@@ -45,7 +46,26 @@ namespace AoC2024
 
 		protected override void ExecutePuzzle2()
 		{
+			// Initialize towels
+			_availableTowelPatterns = SplitString(_inputDataLines[0], ", ");
 			
+			Cache cache = new Cache();
+			List<long> towelCombinationCount = _inputDataLines
+				.Skip(1)
+				.Select(CountTowelCombinationsForRemainingDesign)
+				.ToList();
+
+			LogResult("Total possible towel configurations", towelCombinationCount.Sum());
+
+			// Local method, recursive
+			long CountTowelCombinationsForRemainingDesign(string remainingDesign)
+			{
+				//LogResult("Remaining pattern", remainingDesign);
+				return cache.GetOrAdd(
+					remainingDesign,
+					design => design == "" ? 1 : _availableTowelPatterns.Where(design.StartsWith).Sum(towel => CountTowelCombinationsForRemainingDesign(design.Substring(towel.Length)))
+				);
+			}
 		}
 
 		[Button("Reset Scene")]
@@ -86,17 +106,16 @@ namespace AoC2024
 			int totalPossibleDesigns = 0;
 			for (int line = 1; line < _inputDataLines.Length; line++)
 			{
-				// Create entry
-				RectTransform designEntry = Instantiate(_designEntryPrefab, _designsParent);
-				
-				// Instantiate design block
 				string designPattern = _inputDataLines[line];
 				LogResult("Checking design", designPattern);
-				List<Color> designColors = GetColorsForStripePattern(designPattern);
 
+				RectTransform designEntry = null;
 				ColorBlock designBlock = null;
 				if (line - 1 < _maxDesignsToDisplay)
 				{
+					// Instantiate design container & color block
+					List<Color> designColors = GetColorsForStripePattern(designPattern);
+					designEntry = Instantiate(_designEntryPrefab, _designsParent);
 					designBlock = Instantiate(_colorBlockPrefab, designEntry);
 					designBlock.Initialize(BlockBackgroundDefault, designColors);
 
@@ -111,7 +130,7 @@ namespace AoC2024
 					Log("Design " + designPattern + " is possible through " + _possibleTowelCombinations.Count + " combination(s) of towels");
 					totalPossibleDesigns++;
 					
-					if (designBlock != null)
+					if (designEntry != null)
 					{
 						designBlock.SetBackgroundColor(BlockBackgroundPossible);
 

@@ -275,7 +275,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &80411704
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1004,7 +1004,7 @@ MonoBehaviour:
   _arrowPrefab: {fileID: 8734361920182697559, guid: 6654f3be96958834f86418781a67de24, type: 3}
   _towelsParent: {fileID: 1311360260}
   _designsParent: {fileID: 1808727331}
-  _maxTowelCombinationsPerDesign: 1
+  _maxTowelCombinationsPerDesign: 9999
   _maxDesignsToDisplay: 10
 --- !u!4 &399123320
 Transform:
