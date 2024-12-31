@@ -826,6 +826,9 @@ MonoBehaviour:
   _map: {fileID: 1102199171}
   _pathHighlight: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   _corruptedHighlight: {r: 0, g: 0, b: 0, a: 1}
+  _newCorruptedHighlight: {r: 1, g: 0, b: 0, a: 1}
+  _cyclesPerUpdateLoop: 1000
+  _byteInterval: 0.02
 --- !u!4 &467931248
 Transform:
   m_ObjectHideFlags: 0
@@ -1025,7 +1028,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &620103608
 RectTransform:
   m_ObjectHideFlags: 0
