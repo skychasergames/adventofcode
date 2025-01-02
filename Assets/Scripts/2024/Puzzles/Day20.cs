@@ -12,11 +12,15 @@ namespace AoC2024
 	{
 		[SerializeField] private DijkstraGrid _map = null;
 		[SerializeField] private Color _wallColor = Color.black;
-		[SerializeField] private Color _currentCheatColor = Color.magenta;
-		[SerializeField] private Color _oldCheatColor = Color.grey;
+		[SerializeField] private Color _currentWallCheatColor = Color.magenta;
+		[SerializeField] private Color _oldWallCheatColor = Color.grey;
+		[SerializeField] private Color _currentPathCheatStartColor = new Color(1.0f, 0.6f, 0.7f);
+		[SerializeField] private Color _currentPathCheatEndColor = new Color(0.8f, 0.4f, 1.0f);
+		[SerializeField] private Color _oldPathCheatColor = new Color(0.8f, 0.8f, 0.8f);
 		[SerializeField] private Color _startColor = Color.yellow;
 		[SerializeField] private Color _endColor = Color.green;
 		[SerializeField] private int _cheatScoreThreshold = 100;
+		[SerializeField] private int _maxCheatDistance = 20;
 		[SerializeField] private float _cheatInterval = 0.1f;
 		[SerializeField] private int _skipCheatInterval = 100;
 		
@@ -24,6 +28,7 @@ namespace AoC2024
 		
 		private Vector2Int _startCoord = Vector2Int.zero;
 		private Vector2Int _endCoord = Vector2Int.zero;
+		private List<Vector2Int> _path = null; 
 		private List<Vector2Int> _internalWalls = null; 
 		private int _fullRaceLength = 0;
 		private Dictionary<int, int> _numCheatsByScore = new Dictionary<int, int>();
@@ -33,12 +38,15 @@ namespace AoC2024
 			InitializeMap();
 			FindShortestPath();
 			
-			_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(FindBestCheats(), this);
+			_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(FindBestSingleWallCheats(), this);
 		}
 
 		protected override void ExecutePuzzle2()
 		{
+			InitializeMap();
+			FindShortestPath();
 			
+			_executePuzzleCoroutine = EditorCoroutineUtility.StartCoroutine(FindBestCheats(), this);
 		}
 
 		[Button]
@@ -51,6 +59,7 @@ namespace AoC2024
 			}
 		
 			_map.Initialize(0);
+			_path = new List<Vector2Int>();
 			_internalWalls = new List<Vector2Int>();
 			_numCheatsByScore = new Dictionary<int, int>();
 		}
@@ -142,16 +151,28 @@ namespace AoC2024
 
 			_fullRaceLength = endCell.BestTotalDistanceToReachCell;
 			LogResult("Full race length without cheats", _fullRaceLength + " picoseconds");
+			
+			_path = new List<Vector2Int>();
+			DijkstraGridCell pathCell = endCell;
+			do
+			{
+				_path.Add(pathCell.Coords);
+				pathCell = pathCell.PreviousCellInPath;
+			}
+			while (pathCell != startCell);
+			
+			_path.Add(pathCell.Coords);
+			_path.Reverse();
 		}
 
-		private IEnumerator FindBestCheats()
+		private IEnumerator FindBestSingleWallCheats()
 		{
 			EditorWaitForSeconds cheatInterval = new EditorWaitForSeconds(_cheatInterval);
 			int intervalsSkipped = 0;
 
 			foreach (Vector2Int cheatCoord in _internalWalls)
 			{
-				_map.HighlightCellView(cheatCoord, _currentCheatColor);
+				_map.HighlightCellView(cheatCoord, _currentWallCheatColor);
 				EditorApplication.QueuePlayerLoopUpdate();
 
 				List<int> cellDistances = _map.GetOrthogonalNeighbourValues(cheatCoord)
@@ -178,7 +199,67 @@ namespace AoC2024
 					yield return cheatInterval;
 				}
 				
-				_map.HighlightCellView(cheatCoord, _oldCheatColor);
+				_map.HighlightCellView(cheatCoord, _oldWallCheatColor);
+				EditorApplication.QueuePlayerLoopUpdate();
+			}
+
+			int totalCheatsAboveScoreThreshold = 0;
+			Log("Total number of cheats:");
+			foreach (KeyValuePair<int, int> pair in _numCheatsByScore.OrderBy(pair => pair.Key))
+			{
+				Log("- " + pair.Value + " cheats that save " + pair.Key + " picoseconds");
+				if (pair.Key >= _cheatScoreThreshold)
+				{
+					totalCheatsAboveScoreThreshold += pair.Value;
+				}
+			}
+
+			LogResult("Total cheats that save at least " + _cheatScoreThreshold + " picoseconds", totalCheatsAboveScoreThreshold);
+		}
+		
+		private IEnumerator FindBestCheats()
+		{
+			EditorWaitForSeconds cheatInterval = new EditorWaitForSeconds(_cheatInterval);
+			int intervalsSkipped = 0;
+
+			// Check for start and end cells that are at least 4 steps away (the shortest cheat - cutting a U-turn)
+			const int minDistance = 4;
+			for (int cheatStartIndex = 0; cheatStartIndex < _path.Count - minDistance; cheatStartIndex++)
+			{
+				DijkstraGridCell cheatStartCell = _map.GetCellValue(_path[cheatStartIndex]);
+				_map.HighlightCellView(cheatStartCell.Coords, _currentPathCheatStartColor);
+				
+				for (int cheatEndIndex = cheatStartIndex + minDistance; cheatEndIndex < _path.Count; cheatEndIndex++)
+				{
+					DijkstraGridCell cheatEndCell = _map.GetCellValue(_path[cheatEndIndex]);
+					_map.HighlightCellView(cheatEndCell.Coords, _currentPathCheatEndColor);
+					EditorApplication.QueuePlayerLoopUpdate();
+					
+					Vector2Int distanceBetweenCells = cheatStartCell.Coords - cheatEndCell.Coords;
+					int cheatDistance = Mathf.Abs(distanceBetweenCells.x) + Mathf.Abs(distanceBetweenCells.y);
+					if (cheatDistance <= _maxCheatDistance)
+					{
+						int cheatScore = (cheatEndCell.BestTotalDistanceToReachCell - cheatStartCell.BestTotalDistanceToReachCell) - cheatDistance;
+						if (cheatScore > 0) 
+						{
+							_numCheatsByScore.AddIfUnique(cheatScore, 0);
+							_numCheatsByScore[cheatScore]++;
+							//LogResult("Cheat score", cheatScore);
+						}
+					}
+
+					intervalsSkipped++;
+					if (intervalsSkipped > _skipCheatInterval)
+					{
+						intervalsSkipped = 0;
+						yield return cheatInterval;
+					}
+				
+					_map.HighlightCellView(cheatEndCell.Coords, Color.white);
+					EditorApplication.QueuePlayerLoopUpdate();
+				}
+				
+				_map.HighlightCellView(cheatStartCell.Coords, _oldPathCheatColor);
 				EditorApplication.QueuePlayerLoopUpdate();
 			}
 

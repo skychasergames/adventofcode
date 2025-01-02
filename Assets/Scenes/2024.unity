@@ -1909,7 +1909,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &986113778
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2304,13 +2304,17 @@ MonoBehaviour:
   _puzzleData: {fileID: 4900000, guid: 49f750074b13fee43aaa6a4b5fd425a4, type: 3}
   _map: {fileID: 1477770295}
   _wallColor: {r: 0, g: 0, b: 0, a: 1}
-  _currentCheatColor: {r: 1, g: 0, b: 1, a: 1}
-  _oldCheatColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  _currentWallCheatColor: {r: 1, g: 0, b: 1, a: 1}
+  _oldWallCheatColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  _currentPathCheatStartColor: {r: 1, g: 0.6, b: 0.7, a: 1}
+  _currentPathCheatEndColor: {r: 0.8, g: 0.4, b: 1, a: 1}
+  _oldPathCheatColor: {r: 0.8, g: 0.8, b: 0.8, a: 1}
   _startColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
   _endColor: {r: 0, g: 1, b: 0, a: 1}
   _cheatScoreThreshold: 100
-  _cheatInterval: 0.1
-  _skipCheatInterval: 100
+  _maxCheatDistance: 20
+  _cheatInterval: 0
+  _skipCheatInterval: 100000
 --- !u!4 &1246223498
 Transform:
   m_ObjectHideFlags: 0
